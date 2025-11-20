@@ -2,8 +2,8 @@
 body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
-    padding: 0;
-    background-color: #f4f7f6; /* Hafif Açık Gri */
+    padding-top: 60px; /* Sabit Menü için boşluk */
+    background-color: #f4f7f6;
     color: #333;
 }
 
@@ -14,20 +14,57 @@ body {
     padding: 20px 0;
 }
 
-/* Başlık (Header) */
-header {
-    background-color: #e50000; /* YouTube Kırmızısı */
+/* Navigasyon Barı (PROFESYONEL MENÜ) */
+nav {
+    background-color: #1e1e1e; /* Koyu Gri/Siyah */
     color: white;
-    padding: 30px 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    position: fixed; /* Sabit Menü */
+    top: 0;
+    width: 100%;
+    z-index: 1000;
 }
 
-header h1 {
+nav .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+nav h1 {
+    font-size: 1.5em;
     margin: 0;
-    font-weight: 700;
+    color: white;
 }
 
-/* Kartlar (Card) */
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 30px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+nav a:hover, nav a.active {
+    color: #e50000; /* YouTube Kırmızısı */
+}
+
+
+/* Başlık ve Kartlar */
+header {
+    background-color: transparent; /* Header'ı kaldırdık */
+    padding: 0;
+}
+
 .card {
     background: white;
     padding: 25px;
@@ -37,14 +74,15 @@ header h1 {
 }
 
 /* Kontroller ve Buton */
-#controls {
+.controls-panel {
     display: flex;
     gap: 15px;
     align-items: center;
+    margin-bottom: 20px;
 }
 
-#fetch-button {
-    background-color: #007bff; /* Mavi Buton */
+button {
+    background-color: #e50000; /* Kırmızı Buton */
     color: white;
     border: none;
     border-radius: 8px;
@@ -54,11 +92,11 @@ header h1 {
     transition: background-color 0.3s;
 }
 
-#fetch-button:hover {
-    background-color: #0056b3;
+button:hover {
+    background-color: #cc0000;
 }
 
-#region-select {
+select {
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #ccc;
@@ -76,7 +114,7 @@ header h1 {
     background: #f9f9f9;
     padding: 15px;
     border-radius: 8px;
-    border-left: 5px solid #e50000;
+    border-left: 5px solid #007bff; /* Mavi Çizgi */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s;
 }
@@ -89,7 +127,7 @@ header h1 {
 .video-title {
     font-weight: 600;
     font-size: 1.1em;
-    color: #e50000;
+    color: #333;
 }
 
 .video-stats {
@@ -98,7 +136,7 @@ header h1 {
     margin-top: 5px;
 }
 
-/* Spinner */
+/* Diğer */
 .spinner-hidden {
     display: none;
     text-align: center;
@@ -106,7 +144,6 @@ header h1 {
     color: #e50000;
 }
 
-/* Footer */
 footer {
     text-align: center;
     padding: 20px 0;
@@ -114,4 +151,3 @@ footer {
     font-size: 0.9em;
     color: #777;
 }
-
