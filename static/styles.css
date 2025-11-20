@@ -1,1 +1,117 @@
+/* Genel Ayarlar ve Font */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6; /* Hafif Açık Gri */
+    color: #333;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+/* Başlık (Header) */
+header {
+    background-color: #e50000; /* YouTube Kırmızısı */
+    color: white;
+    padding: 30px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-weight: 700;
+}
+
+/* Kartlar (Card) */
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+/* Kontroller ve Buton */
+#controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+#fetch-button {
+    background-color: #007bff; /* Mavi Buton */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+#fetch-button:hover {
+    background-color: #0056b3;
+}
+
+#region-select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+/* Video Listesi (Grid View) */
+.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.video-card {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 5px solid #e50000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+
+.video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.video-title {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #e50000;
+}
+
+.video-stats {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Spinner */
+.spinner-hidden {
+    display: none;
+    text-align: center;
+    font-size: 1.2em;
+    color: #e50000;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #ddd;
+    font-size: 0.9em;
+    color: #777;
+}
 
