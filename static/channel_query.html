@@ -1,1 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanal Sorgulama | YT Analiz Motoru</title>
+    <link rel="stylesheet" href="/static/styles.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <h1>YT Analiz Motoru</h1>
+            <ul>
+                <li><a href="/static/index.html">🔥 Trend Analiz</a></li>
+                <li><a href="/static/channel_query.html" class="active">🔗 Kanal Sorgulama</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <h1>🔗 Detaylı Kanal Analizi</h1>
+            <p>Bir YouTube kanalının abone, izlenme, kayıt tarihi ve monetizasyon durumunu anlık sorgulayın.</p>
+            
+            <section class="card">
+                <h2>Kanal Linkini Girin</h2>
+                <div class="controls-panel">
+                    <input type="text" id="channel-url" placeholder="Kanal linki (Örn: youtube.com/@kanaladi)" style="flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                    <button id="analyze-button">Analiz Et</button>
+                </div>
+            </section>
+
+            <section id="results-container" class="card" style="display: none;">
+                <div id="loading-spinner" class="spinner-hidden">Veriler çekiliyor...</div>
+                <div id="channel-details">
+                    </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 YouTube Analiz Motoru. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script src="/static/channel_query.js"></script> 
+</body>
+</html>
 
