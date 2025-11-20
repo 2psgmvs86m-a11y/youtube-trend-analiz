@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Trend Analiz - HTML/CSS/JS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🔥 YouTube Trend Analiz</h1>
+            <p>Veriye Dayalı İçerik Stratejileri Geliştirin.</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section id="controls" class="card">
+                <h2>Ayarlar</h2>
+                <select id="region-select">
+                    <option value="TR">Türkiye (TR)</option>
+                    <option value="US">Global (US)</option>
+                    <option value="DE">Almanya (DE)</option>
+                </select>
+                <button id="fetch-button">Trendleri Çek</button>
+            </section>
+
+            <section id="video-list-container" class="card">
+                <h2>Trend Olan Videolar</h2>
+                <div id="loading-spinner" class="spinner-hidden">Yükleniyor...</div>
+                <div id="video-list" class="grid-view">
+                    </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Trend Analiz Motoru. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
 
