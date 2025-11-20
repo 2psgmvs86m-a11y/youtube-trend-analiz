@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory # send_from_directory eklendi
 from googleapiclient.discovery import build
 import os
 import pandas as pd
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static') # static_folder ayarlandı
 
 # --- GUVENLIK: API Anahtarini Ortam Degiskenlerinden Cek ---
 API_KEY = os.environ.get("YOUTUBE_API_KEY")
@@ -37,6 +37,13 @@ def get_trending_videos(region_code="TR", max_results=30):
         })
     return pd.DataFrame(video_data)
 
+# --- YENİ EKLENEN KISIM: Kök URL'den HTML Dosyasını Sunma ---
+@app.route('/')
+def serve_index():
+    """Kök URL'ye (/) gelen isteklere static/index.html dosyasını döndürür."""
+    # index.html, static_folder olarak ayarladığımız 'static' klasöründedir
+    return send_from_directory(app.static_folder, 'index.html')
+
 # --- API Uç Noktası (Endpoint) ---
 @app.route('/api/trending', methods=['GET'])
 def trending_data():
@@ -51,4 +58,3 @@ def trending_data():
 if __name__ == '__main__':
     # Render, api_app yerine gunicorn kullanacaktir
     app.run(debug=True)
-
