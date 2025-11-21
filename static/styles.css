@@ -1,158 +1,87 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-
+/* --- GLOBAL DEĞİŞKENLER --- */
 :root {
-    --primary: #ff0000;
-    --primary-glow: rgba(255, 0, 0, 0.3);
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --text-main: #1a1a1a;
-    --text-sec: #555;
-    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --bg-color: #f8faff;
+    --text-color: #212529;
+    --card-bg: #ffffff;
+    --primary-red: #ea4335;
+    --pill-pink-bg: #f8d7da;
+    --pill-pink-text: #721c24;
+    --shadow-soft: 0 10px 40px rgba(0,0,0,0.08);
 }
 
 body.dark-mode {
-    --glass-bg: rgba(20, 20, 20, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --text-main: #ffffff;
-    --text-sec: #aaaaaa;
-    --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-    --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    --bg-color: #181818;
+    --text-color: #f1f1f1;
+    --card-bg: #202020;
+    --shadow-soft: 0 10px 40px rgba(0,0,0,0.5);
 }
-
-* { box-sizing: border-box; transition: all 0.3s ease; }
 
 body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg-gradient);
-    background-attachment: fixed;
-    color: var(--text-main);
-    margin: 0;
-    padding-top: 90px;
-    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-/* NAVIGASYON (FIX) */
-nav {
-    position: fixed;
-    top: 0; left: 0; width: 100%;
-    height: 70px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--glass-border);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    box-shadow: var(--shadow);
+/* --- NAVBAR (Tüm Sayfalar İçin) --- */
+.navbar { padding-top: 20px; margin-bottom: 30px; }
+.navbar-brand { font-weight: 800; color: var(--text-color) !important; font-size: 1.5rem; }
+.navbar-brand i { color: var(--primary-red); }
+.nav-icon-btn {
+    background: none; border: none; color: var(--text-color);
+    font-size: 1.2rem; margin-left: 15px; cursor: pointer;
+    transition: transform 0.2s;
+}
+.nav-icon-btn:hover { transform: scale(1.1); color: var(--primary-red); }
+
+/* --- SAYFA 1: INDEX (Ana Sayfa) --- */
+.hero-section { text-align: center; padding: 60px 20px 40px 20px; }
+.hero-title { font-weight: 800; font-size: 3rem; margin-bottom: 15px; letter-spacing: -1px; }
+.hero-subtitle { color: #6c757d; font-size: 1.2rem; margin-bottom: 50px; }
+
+.search-wrapper {
+    background: var(--card-bg); padding: 10px; border-radius: 50px;
+    box-shadow: var(--shadow-soft); max-width: 700px; margin: 0 auto; display: flex;
+}
+.search-input { border: none; background: transparent; flex-grow: 1; padding: 15px 25px; font-size: 1.1rem; outline: none; color: var(--text-color); }
+.search-btn {
+    background-color: var(--primary-red); color: white; border: none;
+    width: 55px; height: 55px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;
 }
 
-.nav-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+/* Trend Scroll Container (Index Altı) */
+.video-scroll-container { display: flex; overflow-x: auto; gap: 20px; padding: 20px 5px; scrollbar-width: none; }
+.video-card {
+    min-width: 280px; background: var(--card-bg); border-radius: 15px; overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-decoration: none; color: inherit;
+}
+.video-card img { width: 100%; height: 160px; object-fit: cover; }
+.video-info { padding: 15px; font-size: 0.9rem; }
+
+/* --- SAYFA 2: SORGULA (Stats Cards) --- */
+.stats-card {
+    background: var(--card-bg); border-radius: 4px; border-top: 3px solid var(--primary-red);
+    padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-soft); text-align: center;
+}
+.stats-value { font-size: 1.5rem; font-weight: bold; }
+.stats-label { font-size: 0.85rem; opacity: 0.7; text-transform: uppercase; }
+.grade-box {
+    width: 80px; height: 80px; border: 4px solid var(--primary-red); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold;
 }
 
-.logo {
-    font-weight: 800;
-    font-size: 1.4rem;
-    display: flex; align-items: center; gap: 8px;
-    color: var(--text-main);
-    text-decoration: none;
-    white-space: nowrap;
+/* --- SAYFA 3: ANALİZ (Trend Page) --- */
+.main-title { font-size: 2.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; }
+.control-pill {
+    background: #e9ecef; border-radius: 20px; padding: 5px 15px; border: none;
+    font-weight: 600; color: #495057; margin-left: 10px;
 }
-.logo i { color: var(--primary); }
+.tag-item {
+    display: block; background-color: var(--pill-pink-bg); color: var(--pill-pink-text);
+    padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 600; width: fit-content;
+}
+.section-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 15px; }
+.stat-highlight { font-weight: 800; font-size: 1.1rem; }
 
-.nav-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.home-btn {
-    text-decoration: none;
-    font-weight: 600;
-    color: var(--text-main);
-    font-size: 0.9rem;
-    display: flex; align-items: center; gap: 5px;
-}
-
-.home-btn:hover { color: var(--primary); }
-
-select.lang-select {
-    background: transparent;
-    border: 1px solid var(--glass-border);
-    padding: 5px;
-    border-radius: 8px;
-    color: var(--text-main);
-    font-weight: 600;
-    cursor: pointer;
-}
-
-button.icon-btn {
-    background: transparent; border: none;
-    font-size: 1.2rem; color: var(--text-main);
-    cursor: pointer;
-}
-
-/* GENEL */
-.container { width: 90%; max-width: 1100px; margin: 0 auto; }
-.hero { text-align: center; padding: 40px 20px; }
-
-h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 15px; line-height: 1.2; }
-.subtitle { font-size: 1.1rem; color: var(--text-sec); margin-bottom: 40px; }
-
-/* ARAMA KUTUSU */
-.search-container {
-    position: relative; max-width: 600px; margin: 0 auto 50px;
-}
-.search-box {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    padding: 5px; border-radius: 50px;
-    display: flex; box-shadow: var(--shadow);
-}
-.search-box input {
-    flex: 1; border: none; background: transparent;
-    padding: 15px 20px; font-size: 1rem; outline: none;
-    color: var(--text-main);
-}
-.search-box button {
-    background: var(--primary); color: white;
-    border: none; width: 50px; height: 50px;
-    border-radius: 50%; cursor: pointer; font-size: 1.2rem;
-}
-
-/* KARTLAR */
-.grid-view {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-.glass-card {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px; overflow: hidden;
-    transition: 0.3s;
-}
-.glass-card:hover { transform: translateY(-5px); }
-
-.tag {
-    background: rgba(0,0,0,0.05); padding: 4px 8px;
-    border-radius: 8px; font-size: 0.8rem; display: inline-block;
-    margin: 2px; color: var(--text-main);
-}
-
-/* MOBİL DÜZENLEMELER (BURASI LOGO SIKIŞMASINI ÇÖZER) */
-@media (max-width: 768px) {
-    nav { padding: 0 15px; }
-    h1 { font-size: 2rem; }
-    
-    /* Mobilde 'Ana Sayfa' yazısını gizle, sadece ikonu göster */
-    .home-text { display: none; }
-    .nav-actions { gap: 10px; }
-}
+/* Ortak Helperlar */
+.loader { display: none; text-align: center; padding: 20px; }
