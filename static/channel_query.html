@@ -3,49 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanal Sorgulama | YT Analiz Motoru</title>
-    <link rel="stylesheet" href="/static/styles.css"> 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Kanal Sorgula | YT Analiz</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+
     <nav>
-        <div class="container">
-            <h1>YT Analiz Motoru</h1>
-            <ul>
-                <li><a href="/static/index.html">🔥 Trend Analiz</a></li>
-                <li><a href="/static/channel_query.html" class="active">🔗 Kanal Sorgulama</a></li>
-            </ul>
+        <div class="nav-container">
+            <a href="/" class="logo" style="text-decoration: none;">
+                <i class="fa-brands fa-youtube"></i>
+                YT<span>ANALIZ</span>
+            </a>
+            
+            <div class="nav-actions">
+                <a href="/" style="margin-right: 15px; text-decoration: none; font-weight: 600; color: var(--text-main); font-size: 0.9rem;">
+                    <i class="fa-solid fa-house"></i> Ana Sayfa
+                </a>
+                
+                <select id="language-selector" class="lang-select">
+                    <option value="tr">🇹🇷 TR</option>
+                    <option value="en">🇺🇸 EN</option>
+                </select>
+                
+                <button id="theme-toggle" class="icon-btn">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <main>
-        <div class="container">
-            <h1>🔗 Detaylı Kanal Analizi</h1>
-            <p>Bir YouTube kanalının abone, izlenme, kayıt tarihi ve monetizasyon durumunu anlık sorgulayın.</p>
-            
-            <section class="card">
-                <h2>Kanal Linkini Girin</h2>
-                <div class="controls-panel">
-                    <input type="text" id="channel-url" placeholder="Kanal linki (Örn: youtube.com/@kanaladi)" style="flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-                    <button id="analyze-button">Analiz Et</button>
-                </div>
-            </section>
+    <main class="container" style="padding-top: 40px;">
+        
+        <section class="hero" style="padding-bottom: 20px;">
+            <h1>Kanal Analizi 🔍</h1>
+            <p class="subtitle">Bir kanalın gizli verilerini, etiketlerini ve kazanç durumunu inceleyin.</p>
 
-            <section id="results-container" class="card" style="display: none;">
-                <div id="loading-spinner" class="spinner-hidden">Veriler çekiliyor...</div>
-                <div id="channel-details">
-                    </div>
-            </section>
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="channel-url" placeholder="Kanal linki, adı veya @kullanıcıadı...">
+                    <button id="analyze-button">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <div id="loading-spinner" style="text-align: center; display: none; margin-bottom: 20px;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary);"></i>
+            <p style="margin-top: 10px; color: var(--text-sec);">Veriler taranıyor...</p>
         </div>
+
+        <div id="results-container" style="display: none; max-width: 800px; margin: 0 auto;">
+            <div id="channel-details"></div>
+        </div>
+
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 YouTube Analiz Motoru. Tüm hakları saklıdır.</p>
-        </div>
-    </footer>
-
-    <script src="/static/channel_query.js"></script> 
+    <script src="/static/channel_query.js"></script>
+    
+    <script>
+        // Karanlık Mod Mantığı (Diğer sayfalardan bağımsız çalışmasın diye)
+        const themeBtn = document.getElementById('theme-toggle');
+        if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+        
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        });
+    </script>
 </body>
 </html>
 
