@@ -11,16 +11,20 @@
 
     <nav>
         <div class="nav-container">
-            <div class="logo">
+            <a href="/" class="logo">
                 <i class="fa-brands fa-youtube"></i>
                 YT<span>ANALIZ</span>
-            </div>
+            </a>
             
             <div class="nav-actions">
+                 <a href="/analiz" class="home-btn">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span class="home-text">Trendler</span>
+                </a>
+
                 <select id="language-selector" class="lang-select">
-                    <option value="tr">🇹🇷 TR</option>
-                    <option value="en">🇺🇸 EN</option>
-                    <option value="de">🇩🇪 DE</option>
+                    <option value="tr">🇹🇷</option>
+                    <option value="en">🇺🇸</option>
                 </select>
                 
                 <button id="theme-toggle" class="icon-btn">
@@ -34,7 +38,7 @@
         <section class="hero">
             <h1 id="hero-title">YouTube Stratejini <br>Veriyle Yönet.</h1>
             <p class="subtitle" id="hero-desc">
-                İçerik üreticileri için en gelişmiş rakip analizi, etiket bulucu ve trend takip aracı.
+                İçerik üreticileri için gelişmiş rakip analizi ve trend takip aracı.
             </p>
 
             <div class="search-container">
@@ -59,4 +63,3 @@
     <script src="/static/app.js"></script>
 </body>
 </html>
-
