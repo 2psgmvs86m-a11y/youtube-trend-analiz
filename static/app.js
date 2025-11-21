@@ -1,62 +1,97 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const fetchButton = document.getElementById('fetch-button');
-    const regionSelect = document.getElementById('region-select');
-    const videoList = document.getElementById('video-list');
-    const loadingSpinner = document.getElementById('loading-spinner');
-
-    // Verileri API'dan çeken ana fonksiyon
-    async function fetchTrendingData() {
-        videoList.innerHTML = '';
-        loadingSpinner.classList.remove('spinner-hidden');
-
-        const selectedRegion = regionSelect.value;
-        const apiEndpoint = `/api/trending?region=${selectedRegion}`; // Flask API'ye çağrı
-
-        try {
-            const response = await fetch(apiEndpoint);
-            
-            if (!response.ok) {
-                throw new Error(`API Hatası: HTTP durum kodu ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            loadingSpinner.classList.add('spinner-hidden');
-            displayVideos(data);
-        } catch (error) {
-            loadingSpinner.classList.add('spinner-hidden');
-            videoList.innerHTML = `<p style="color: red;">Veri çekilemedi: ${error.message}. API Anahtarınızı ve kotanızı kontrol edin.</p>`;
+    
+    // --- DİL AYARLARI ---
+    const translations = {
+        tr: {
+            title: 'YouTube Stratejini <br>Veriyle Yönet.',
+            desc: 'İçerik üreticileri için en gelişmiş rakip analizi, etiket bulucu ve trend takip aracı.',
+            placeholder: 'Kanal linki veya ismi girin...',
+            trendHeader: 'Gündemdeki Videolar'
+        },
+        en: {
+            title: 'Master YouTube <br>With Data.',
+            desc: 'Advanced competitor analysis, tag finder, and trend tracking tool for creators.',
+            placeholder: 'Enter channel link or name...',
+            trendHeader: 'Trending Now'
         }
+    };
+
+    const langSelector = document.getElementById('language-selector');
+    
+    langSelector.addEventListener('change', (e) => {
+        const lang = e.target.value;
+        const t = translations[lang];
+        
+        document.getElementById('hero-title').innerHTML = t.title;
+        document.getElementById('hero-desc').textContent = t.desc;
+        document.getElementById('main-search').placeholder = t.placeholder;
+        document.getElementById('trend-header').textContent = t.trendHeader;
+        
+        fetchTrends(lang === 'tr' ? 'TR' : 'US');
+    });
+
+    // --- DARK MODE ---
+    const themeBtn = document.getElementById('theme-toggle');
+    const icon = themeBtn.querySelector('i');
+    
+    // Kullanıcının tercihini hatırla (LocalStorage)
+    if(localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        icon.classList.replace('fa-moon', 'fa-sun');
     }
 
-    // Videoları HTML'e yerleştiren fonksiyon
-    function displayVideos(videos) {
-        if (videos.length === 0) {
-            videoList.innerHTML = '<p>Bu bölge için trend verisi bulunamadı.</p>';
-            return;
+    themeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        
+        if (isDark) {
+            icon.classList.replace('fa-moon', 'fa-sun');
+        } else {
+            icon.classList.replace('fa-sun', 'fa-moon');
         }
+    });
 
-        videos.forEach(video => {
-            const card = document.createElement('div');
-            card.className = 'video-card';
-            
-            // İzlenme sayısını formatlama (Örn: 1,234,567)
-            const formattedViews = new Intl.NumberFormat('tr-TR').format(video.views);
+    // --- ARAMA FONKSİYONU ---
+    const searchBtn = document.getElementById('search-btn');
+    const searchInput = document.getElementById('main-search');
 
-            card.innerHTML = `
-                <h3 class="video-title">${video.title}</h3>
-                <p><strong>Kanal:</strong> ${video.channel}</p>
-                <p class="video-stats">👁️ İzlenme: ${formattedViews}</p>
-                <a href="${video.url}" target="_blank" style="color: #007bff; text-decoration: none; font-weight: 600;">Videoyu İzle</a>
-            `;
-            videoList.appendChild(card);
-        });
+    function goSearch() {
+        const q = searchInput.value.trim();
+        if(q) window.location.href = `/sorgula?q=${encodeURIComponent(q)}`; // Kullanıcıyı yönlendir
     }
 
-    // Olay Dinleyicileri
-    fetchButton.addEventListener('click', fetchTrendingData);
+    searchBtn.addEventListener('click', goSearch);
+    searchInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') goSearch(); });
 
-    // Sayfa yüklendiğinde varsayılan trendleri çek (Türkiye)
-    fetchTrendingData();
+    // --- TRENDLERİ ÇEK ---
+    function fetchTrends(region = 'TR') {
+        const list = document.getElementById('video-list');
+        list.innerHTML = '<p style="opacity:0.6; padding-left:20px;">Yükleniyor...</p>';
+
+        fetch(`/api/trending?region=${region}&limit=4`)
+            .then(res => res.json())
+            .then(data => {
+                list.innerHTML = '';
+                data.forEach(video => {
+                    list.innerHTML += `
+                        <div class="glass-card">
+                            <a href="${video.url}" target="_blank">
+                                <img src="${video.thumbnail}" class="card-thumb">
+                            </a>
+                            <div class="card-content">
+                                <div class="card-title">${video.title}</div>
+                                <div class="card-meta">
+                                    <span>${video.channel}</span>
+                                    <span class="badge">${new Intl.NumberFormat('tr-TR').format(video.views)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+    }
+
+    fetchTrends('TR');
 });
-
