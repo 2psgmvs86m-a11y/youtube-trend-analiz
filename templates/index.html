@@ -9,37 +9,63 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --dark-bg: #0b0e11; --card-bg: #151a21; --accent: #e62429; --text-gray: #9ca3af; }
+        :root { --dark-bg: #0b0e11; --card-bg: #151a21; --accent: #e62429; --text-gray: #cbd5e1; }
         body { background-color: var(--dark-bg); color: white; font-family: 'Inter', sans-serif; }
         h1, h2, h3, .grade-text { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
         
         /* Header & Search */
         .navbar { background: rgba(21, 26, 33, 0.95); border-bottom: 1px solid #2d3748; }
-        .hero { padding: 60px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); }
+        .hero { padding: 40px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); }
+        
+        /* Arama Kutusu Düzeltmeleri */
         .search-input { background: var(--card-bg); border: 1px solid #374151; color: white; padding: 15px; border-radius: 8px 0 0 8px; }
         .search-input:focus { background: var(--card-bg); color: white; border-color: var(--accent); box-shadow: none; }
-        .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 0 30px; border-radius: 0 8px 8px 0; }
+        .search-input::placeholder { color: #94a3b8 !important; opacity: 1; } /* Placeholder rengi açıldı */
+        .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 0 20px; border-radius: 0 8px 8px 0; white-space: nowrap; }
 
         /* Cards */
-        .glass-card { background: var(--card-bg); border: 1px solid #2d3748; border-radius: 12px; padding: 25px; height: 100%; }
-        .channel-banner { height: 150px; width: 100%; object-fit: cover; border-radius: 12px 12px 0 0; opacity: 0.6; }
-        .avatar-overlay { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--card-bg); margin-top: -60px; position: relative; z-index: 2; background: #000; }
+        .glass-card { background: var(--card-bg); border: 1px solid #2d3748; border-radius: 12px; padding: 20px; height: 100%; }
+        .channel-banner { height: 120px; width: 100%; object-fit: cover; border-radius: 12px 12px 0 0; opacity: 0.6; }
         
-        /* Grade Badge */
-        .grade-box { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 3rem; font-weight: 800; color: white; }
-        .grade-A, .grade-A_plus { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        /* Profil ve Avatar Düzeni */
+        .profile-header { margin-top: -50px; position: relative; z-index: 2; text-align: center; }
+        .avatar-overlay { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--card-bg); background: #000; }
+        
+        /* Açıklama Metni Okunabilirliği */
+        .desc-text { color: #e2e8f0 !important; font-size: 0.9rem; line-height: 1.5; margin-top: 10px; }
+
+        /* Grade Badge - Mobilde daha iyi dursun diye */
+        .grade-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #2d3748; }
+        .grade-box { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 2rem; font-weight: 800; color: white; flex-shrink: 0; }
+        .grade-A, .grade-A_plus { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
         .grade-B, .grade-B_plus { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .grade-C { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .grade-D { background: linear-gradient(135deg, #ef4444, #dc2626); }
 
         /* Tags */
-        .tag-badge { background: #2d3748; color: var(--text-gray); font-size: 0.8rem; padding: 5px 10px; border-radius: 4px; margin: 0 5px 5px 0; display: inline-block; }
+        .tag-badge { background: #2d3748; color: #e2e8f0; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; margin: 0 4px 4px 0; display: inline-block; }
 
-        /* Financial Box */
-        .finance-section { background: linear-gradient(to right, #1a202c, #151a21); border-left: 5px solid #10b981; }
+        /* Financial Box - Öne Çıkarılmış */
+        .finance-highlight { 
+            background: linear-gradient(145deg, #064e3b 0%, #151a21 100%); 
+            border: 1px solid #10b981; 
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .finance-highlight::before {
+            content: '$';
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            font-size: 10rem;
+            opacity: 0.05;
+            font-family: 'Rajdhani';
+            color: #10b981;
+        }
         
-        .stat-num { font-size: 1.8rem; font-weight: 700; font-family: 'Rajdhani'; }
-        .stat-label { font-size: 0.85rem; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-num { font-size: 1.5rem; font-weight: 700; font-family: 'Rajdhani'; color: white; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -59,104 +85,121 @@
 
     <div class="hero">
         <div class="container text-center">
-            <h1 class="display-5 fw-bold mb-3">{{ content.title }}</h1>
+            <h1 class="display-6 fw-bold mb-3">{{ content.title }}</h1>
             <div class="row justify-content-center">
-                <div class="col-md-7">
+                <div class="col-12 col-md-8">
                     <form method="POST" class="d-flex shadow-lg">
                         <input type="text" name="query" class="form-control search-input" placeholder="{{ content.placeholder }}" required>
                         <button class="btn btn-audit" type="submit">{{ content.search_btn }}</button>
                     </form>
                 </div>
             </div>
-            {% if error %} <div class="alert alert-danger mt-4 d-inline-block py-2 px-4">{{ error }}</div> {% endif %}
+            {% if error %} <div class="alert alert-danger mt-4 d-inline-block py-2 px-4 small">{{ error }}</div> {% endif %}
         </div>
     </div>
 
     {% if result %}
-    <div class="container pb-5" style="margin-top: -40px;">
+    <div class="container pb-5" style="margin-top: -20px;">
         
-        <div class="glass-card p-0 mb-4">
+        <div class="glass-card p-0 mb-3">
             {% if result.banner %}
             <img src="{{ result.banner }}" class="channel-banner">
             {% else %}
             <div class="channel-banner" style="background: #2d3748;"></div>
             {% endif %}
-            <div class="px-4 pb-4 d-md-flex align-items-end">
-                <div class="text-center text-md-start">
+            
+            <div class="px-3 pb-3">
+                <div class="profile-header">
                     <img src="{{ result.avatar }}" class="avatar-overlay shadow">
-                    <h2 class="mt-3 mb-0 fw-bold">{{ result.title }}</h2>
-                    <p class="text-muted small mb-0">{{ result.desc }}</p>
+                    <h3 class="mt-2 mb-1 fw-bold">{{ result.title }}</h3>
+                    <p class="desc-text">{{ result.desc }}</p>
                 </div>
-                <div class="ms-auto mt-3 mt-md-0 d-flex gap-3 text-center">
+
+                <div class="grade-container">
                     <div class="grade-box grade-{{ result.grade | replace('+','_plus') }}">
                         {{ result.grade }}
                     </div>
-                    <div class="d-flex flex-column justify-content-center">
-                        <h5 class="mb-0 text-white">{{ content.grade }}</h5>
-                        <small class="text-muted">Performance Score</small>
+                    <div class="text-start">
+                        <h6 class="mb-0 text-white fw-bold">{{ content.grade }}</h6>
+                        <small class="text-muted" style="font-size: 0.8rem;">Performance Score</small>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row g-4 mb-4">
-            <div class="col-lg-8">
-                <div class="row g-4">
-                    <div class="col-md-4"><div class="glass-card text-center"><div class="stat-num">{{ result.sub_count }}</div><div class="stat-label">{{ content.subs }}</div></div></div>
-                    <div class="col-md-4"><div class="glass-card text-center"><div class="stat-num">{{ result.view_count }}</div><div class="stat-label">{{ content.views }}</div></div></div>
-                    <div class="col-md-4"><div class="glass-card text-center"><div class="stat-num">{{ result.video_count }}</div><div class="stat-label">{{ content.videos }}</div></div></div>
-                    
-                    <div class="col-md-6">
-                        <div class="glass-card">
-                            <div class="stat-label mb-2"><i class="fas fa-layer-group text-primary"></i> {{ content.category }}</div>
-                            <h4 class="fw-bold">{{ result.niche }}</h4>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="glass-card">
-                            <div class="stat-label mb-2"><i class="far fa-clock text-warning"></i> {{ content.upload_schedule }}</div>
-                            <h4 class="fw-bold">{{ result.upload_schedule }}</h4>
-                        </div>
-                    </div>
+        <div class="glass-card finance-highlight p-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start">
+            <div class="mb-3 mb-md-0">
+                <div class="stat-label mb-1 text-white-50">{{ content.monetization }}</div>
+                <h4 class="fw-bold mb-0 {{ 'text-success' if result.monetized else 'text-danger' }}">
+                    <i class="fas {{ 'fa-check-circle' if result.monetized else 'fa-times-circle' }} me-2"></i>
+                    {{ content.active if result.monetized else content.passive }}
+                </h4>
+            </div>
+            <div class="text-md-end">
+                <div class="stat-label mb-1 text-white-50">{{ content.earnings }}</div>
+                <h2 class="fw-bold text-white mb-0">{{ result.earnings }}</h2>
+                <small class="text-white-50" style="font-size: 0.7rem;">*Tahmini / Estimated</small>
+            </div>
+        </div>
 
-                    <div class="col-12">
-                        <div class="glass-card finance-section d-md-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stat-label mb-1">{{ content.monetization }}</div>
-                                <h4 class="fw-bold mb-0 {{ 'text-success' if result.monetized else 'text-danger' }}">
-                                    {{ content.active if result.monetized else content.passive }}
-                                </h4>
-                            </div>
-                            <div class="text-md-end mt-3 mt-md-0">
-                                <div class="stat-label mb-1">{{ content.earnings }}</div>
-                                <h2 class="fw-bold text-success mb-0">{{ result.earnings }}</h2>
-                            </div>
-                        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-4">
+                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                    <div class="stat-num">{{ result.sub_count }}</div>
+                    <div class="stat-label">{{ content.subs }}</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                    <div class="stat-num">{{ result.view_count }}</div>
+                    <div class="stat-label">{{ content.views }}</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                    <div class="stat-num">{{ result.video_count }}</div>
+                    <div class="stat-label">{{ content.videos }}</div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="glass-card p-3 d-flex align-items-center">
+                    <i class="fas fa-layer-group text-primary fa-2x me-3 opacity-50"></i>
+                    <div>
+                        <div class="stat-label">{{ content.category }}</div>
+                        <h5 class="fw-bold mb-0">{{ result.niche }}</h5>
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-4">
-                <div class="glass-card">
-                    <h5 class="mb-3 border-bottom border-secondary pb-2">{{ content.tags }}</h5>
-                    {% for tag in result.tags %}
-                        <span class="tag-badge">#{{ tag }}</span>
-                    {% else %}
-                        <small class="text-muted">Etiket bulunamadı.</small>
-                    {% endfor %}
+            <div class="col-md-6">
+                <div class="glass-card p-3 d-flex align-items-center">
+                    <i class="far fa-clock text-warning fa-2x me-3 opacity-50"></i>
+                    <div>
+                        <div class="stat-label">{{ content.upload_schedule }}</div>
+                        <h5 class="fw-bold mb-0">{{ result.upload_schedule }}</h5>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <h4 class="mb-3 fw-bold">{{ content.latest }}</h4>
-        <div class="row g-4">
+        {% if result.tags %}
+        <div class="glass-card p-3 mb-4">
+            <h6 class="mb-2 text-muted small fw-bold">{{ content.tags }}</h6>
+            {% for tag in result.tags %}
+                <span class="tag-badge">#{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h5 class="mb-3 fw-bold border-start border-4 border-danger ps-3">{{ content.latest }}</h5>
+        <div class="row g-3">
             {% for video in result.videos %}
             <div class="col-md-4">
                 <a href="https://www.youtube.com/watch?v={{ video.id }}" target="_blank" class="text-decoration-none">
-                    <div class="glass-card p-0 overflow-hidden video-hover">
-                        <img src="{{ video.thumb }}" class="w-100" style="height: 180px; object-fit: cover;">
+                    <div class="glass-card p-0 overflow-hidden video-hover h-100">
+                        <img src="{{ video.thumb }}" class="w-100" style="height: 160px; object-fit: cover;">
                         <div class="p-3">
-                            <h6 class="text-white mb-1 text-truncate">{{ video.title }}</h6>
+                            <h6 class="text-white mb-1 text-truncate" style="font-size: 0.9rem;">{{ video.title }}</h6>
                             <small class="text-muted"><i class="far fa-calendar me-1"></i> {{ video.published }}</small>
                         </div>
                     </div>
