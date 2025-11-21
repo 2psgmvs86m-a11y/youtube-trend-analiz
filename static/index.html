@@ -3,54 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Analiz | YouTube Analiz Motoru</title>
+    <title>Ana Sayfa | YT Analiz v2</title>
     <link rel="stylesheet" href="/static/styles.css"> 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav>
         <div class="container">
-            <h1>YT Analiz Motoru</h1>
+            <div class="logo">🔴 YT Analiz</div>
             <ul>
-                <li><a href="/static/index.html" class="active">🔥 Trend Analiz</a></li>
-                <li><a href="/static/channel_query.html">🔗 Kanal Sorgulama</a></li>
+                <li><a href="/static/index.html" class="active">Ana Sayfa</a></li>
+                <li><a href="/static/trend_analysis.html">📊 Detaylı Trendler</a></li>
+                <li><a href="/static/channel_query.html">🔍 Kanal Sorgula</a></li>
             </ul>
         </div>
     </nav>
 
-    <main>
-        <div class="container">
-            <h1>🔥 Anlık YouTube Trendleri</h1>
-            <p>Veriye Dayalı İçerik Stratejileri Geliştirin.</p>
-            
-            <section id="controls" class="card">
-                <h2>🌍 Trend Bölgesi Seçimi</h2>
-                <div class="controls-panel">
-                    <select id="region-select">
-                        <option value="TR">Türkiye (TR)</option>
-                        <option value="US">Global (US)</option>
-                        <option value="DE">Almanya (DE)</option>
-                        <option value="JP">Japonya (JP)</option>
-                    </select>
-                    <button id="fetch-button">Trendleri Çek ve Analiz Et</button>
-                </div>
-            </section>
-
-            <section id="video-list-container" class="card">
-                <h2>📈 Bölgenin Trend Olan İlk 30 Videosu</h2>
-                <div id="loading-spinner" class="spinner-hidden">Yükleniyor...</div>
-                <div id="video-list" class="grid-view">
-                    </div>
-            </section>
+    <main class="container">
+        <div class="hero-section">
+            <h1>🚀 YouTube Stratejinizi Belirleyin</h1>
+            <p>Anlık veriler, rakip analizi ve niş keşfi için en güçlü araç.</p>
+            <br>
+            <a href="/static/trend_analysis.html"><button>Detaylı Analize Git</button></a>
         </div>
+
+        <h2>🔥 Gündemdeki İlk 5 Video (Türkiye)</h2>
+        <div id="video-list" class="grid-view">
+            </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 YouTube Analiz Motoru. Tüm hakları saklıdır.</p>
-        </div>
-    </footer>
-
-    <script src="/static/app.js"></script> 
+    <script>
+        // Basit JS: Sadece TR ve Limit 5
+        fetch('/api/trending?region=TR&limit=5')
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('video-list');
+                data.forEach(video => {
+                    list.innerHTML += `
+                        <div class="video-card">
+                            <img src="${video.thumbnail}" class="video-thumb">
+                            <div class="video-info">
+                                <div class="video-title">${video.title}</div>
+                                <div class="video-meta">${video.channel} • ${new Intl.NumberFormat('tr-TR').format(video.views)} izlenme</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+    </script>
 </body>
 </html>
