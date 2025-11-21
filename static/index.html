@@ -3,52 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ana Sayfa | YT Analiz v2</title>
-    <link rel="stylesheet" href="/static/styles.css"> 
+    <title>YT Analiz | Modern Veri Aracı</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+
     <nav>
-        <div class="container">
-            <div class="logo">🔴 YT Analiz</div>
-            <ul>
-                <li><a href="/static/index.html" class="active">Ana Sayfa</a></li>
-                <li><a href="/static/trend_analysis.html">📊 Detaylı Trendler</a></li>
-                <li><a href="/static/channel_query.html">🔍 Kanal Sorgula</a></li>
-            </ul>
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fa-brands fa-youtube"></i>
+                YT<span>ANALIZ</span>
+            </div>
+            
+            <div class="nav-actions">
+                <select id="language-selector" class="lang-select">
+                    <option value="tr">TR</option>
+                    <option value="en">EN</option>
+                </select>
+                
+                <button id="theme-toggle" class="icon-btn">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
         </div>
     </nav>
 
     <main class="container">
-        <div class="hero-section">
-            <h1>🚀 YouTube Stratejinizi Belirleyin</h1>
-            <p>Anlık veriler, rakip analizi ve niş keşfi için en güçlü araç.</p>
-            <br>
-            <a href="/static/trend_analysis.html"><button>Detaylı Analize Git</button></a>
-        </div>
+        <section class="hero">
+            <h1 id="hero-title">YouTube Stratejini <br>Veriyle Yönet.</h1>
+            <p class="subtitle" id="hero-desc">
+                İçerik üreticileri için en gelişmiş rakip analizi, etiket bulucu ve trend takip aracı.
+            </p>
 
-        <h2>🔥 Gündemdeki İlk 5 Video (Türkiye)</h2>
-        <div id="video-list" class="grid-view">
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="main-search" placeholder="Kanal linki veya ismi girin...">
+                    <button id="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
             </div>
+        </section>
+
+        <div class="container">
+            <div class="section-title">
+                <i class="fa-solid fa-fire" style="color: var(--primary);"></i>
+                <span id="trend-header">Gündemdeki Videolar</span>
+            </div>
+
+            <div id="video-list" class="grid-view">
+                </div>
+        </div>
     </main>
 
-    <script>
-        // Basit JS: Sadece TR ve Limit 5
-        fetch('/api/trending?region=TR&limit=5')
-            .then(res => res.json())
-            .then(data => {
-                const list = document.getElementById('video-list');
-                data.forEach(video => {
-                    list.innerHTML += `
-                        <div class="video-card">
-                            <img src="${video.thumbnail}" class="video-thumb">
-                            <div class="video-info">
-                                <div class="video-title">${video.title}</div>
-                                <div class="video-meta">${video.channel} • ${new Intl.NumberFormat('tr-TR').format(video.views)} izlenme</div>
-                            </div>
-                        </div>
-                    `;
-                });
-            });
-    </script>
+    <script src="/static/app.js"></script>
 </body>
 </html>
+
