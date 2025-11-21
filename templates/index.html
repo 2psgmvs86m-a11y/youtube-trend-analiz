@@ -24,19 +24,14 @@
             font-family: 'Inter', sans-serif; 
         }
 
-        /* Tüm Başlıkları ve Yazıları Beyaza Zorla */
         h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
-        p, span, div { color: #e2e8f0; } /* Varsayılan yazı rengi açık gri */
+        p, span, div { color: #e2e8f0; } 
         
-        /* Bootstrap text-muted düzeltmesi (Karanlıkta görünmesi için) */
-        .text-muted { color: #cbd5e1 !important; opacity: 0.8; }
-        .text-white-50 { color: #cbd5e1 !important; opacity: 0.8; }
+        .text-muted, .text-white-50 { color: #cbd5e1 !important; opacity: 0.8; }
 
-        /* Header & Search */
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
         .hero { padding: 40px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); }
         
-        /* Input Alanları - Yüksek Kontrast */
         .search-input { 
             background: #0d1117 !important; 
             border: 1px solid #30363d; 
@@ -48,19 +43,12 @@
         .form-control:focus { box-shadow: none; border-color: var(--accent); }
         
         .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 0 20px; border-radius: 0 8px 8px 0; white-space: nowrap; }
-
-        /* Dil Seçici Düzeltmesi */
-        .form-select {
-            background-color: #0d1117;
-            color: white;
-            border: 1px solid #30363d;
-        }
+        .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
 
         /* Cards */
         .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 20px; height: 100%; }
         .channel-banner { height: 120px; width: 100%; object-fit: cover; border-radius: 12px 12px 0 0; opacity: 0.6; }
         
-        /* Profil */
         .profile-header { margin-top: -50px; position: relative; z-index: 2; text-align: center; }
         .avatar-overlay { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--card-bg); background: #000; }
         
@@ -72,20 +60,15 @@
         .grade-C { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .grade-D { background: linear-gradient(135deg, #ef4444, #dc2626); }
 
-        /* Tags */
         .tag-badge { background: #21262d; color: #58a6ff; font-size: 0.8rem; padding: 5px 10px; border-radius: 6px; margin: 0 4px 4px 0; display: inline-block; border: 1px solid #30363d; }
 
-        /* Financial Box Highlight */
-        .finance-highlight { 
-            background: linear-gradient(145deg, #0f3a2e 0%, #161b22 100%); 
-            border: 1px solid #2ea043; 
-            margin-bottom: 20px;
-        }
+        /* Finance Box Renkleri (Dinamik) */
+        .finance-active { background: linear-gradient(145deg, #064e3b 0%, #161b22 100%); border: 1px solid #10b981; }
+        .finance-passive { background: linear-gradient(145deg, #450a0a 0%, #161b22 100%); border: 1px solid #ef4444; }
         
         .stat-num { font-size: 1.5rem; font-weight: 700; font-family: 'Rajdhani'; color: #ffffff; }
         .stat-label { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         
-        /* Linkler */
         a { color: inherit; text-decoration: none; }
     </style>
 </head>
@@ -148,13 +131,55 @@
             </div>
         </div>
 
-        <div class="glass-card finance-highlight p-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start">
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">{{ content.country }}</div>
+                        <h5 class="mb-0 fw-bold text-white">
+                            {% if result.country %}
+                            <img src="https://flagcdn.com/24x18/{{ result.country | lower }}.png" class="me-2" style="border-radius: 2px;">
+                            {{ result.country }}
+                            {% else %}
+                            TR
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <i class="fas fa-globe text-primary opacity-50 fa-2x"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">{{ content.age }}</div>
+                        <h5 class="mb-0 fw-bold text-white">{{ result.age }}</h5>
+                    </div>
+                    <i class="fas fa-birthday-cake text-warning opacity-50 fa-2x"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">{{ content.growth }}</div>
+                        <h5 class="mb-0 fw-bold text-success">
+                            +{{ result.daily_subs }} <small class="text-white-50" style="font-size: 0.7rem">{{ content.daily_sub }}</small>
+                        </h5>
+                    </div>
+                    <i class="fas fa-chart-line text-success opacity-50 fa-2x"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start mb-3 {{ 'finance-active' if result.monetized else 'finance-passive' }}">
             <div class="mb-3 mb-md-0">
                 <div class="stat-label mb-1 text-white-50">{{ content.monetization }}</div>
                 <h4 class="fw-bold mb-0 {{ 'text-success' if result.monetized else 'text-danger' }}">
                     <i class="fas {{ 'fa-check-circle' if result.monetized else 'fa-times-circle' }} me-2"></i>
-                    {{ content.active if result.monetized else content.passive }}
+                    {{ content[result.status_key] }}
                 </h4>
+                {% if result.warning_text %}
+                    <small class="text-danger mt-1 d-block fw-bold"><i class="fas fa-exclamation-triangle me-1"></i> {{ result.warning_text }}</small>
+                {% endif %}
             </div>
             <div class="text-md-end">
                 <div class="stat-label mb-1 text-white-50">{{ content.earnings }}</div>
