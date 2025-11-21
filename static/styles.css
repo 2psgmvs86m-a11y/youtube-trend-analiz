@@ -1,224 +1,253 @@
-/* v3 - Mobil Uyumlu (Responsive) Tasarım */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
 :root {
     --primary: #ff0000;
-    --dark: #0f0f0f;
-    --light: #f9f9f9;
-    --gray: #606060;
-    --card-bg: #ffffff;
+    --primary-glow: rgba(255, 0, 0, 0.3);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --text-main: #1a1a1a;
+    --text-sec: #555;
+    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
+
+body.dark-mode {
+    --glass-bg: rgba(20, 20, 20, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-main: #ffffff;
+    --text-sec: #aaaaaa;
+    --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+* { box-sizing: border-box; transition: all 0.3s ease; }
 
 body {
-    font-family: 'Roboto', 'Poppins', sans-serif;
-    background-color: #f1f1f1;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-gradient);
+    background-attachment: fixed; /* Arka plan sabit kalsın */
+    color: var(--text-main);
     margin: 0;
-    padding-top: 80px; /* Menü payı */
-    color: var(--dark);
+    padding-top: 80px;
+    min-height: 100vh;
 }
 
-/* --- MENÜ (NAVBAR) --- */
+/* --- NAVİGASYON (Glass Effect) --- */
 nav {
-    background: white;
     position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 999;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    padding: 10px 0;
-    transition: all 0.3s ease;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1200px;
+    height: 70px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px); /* Buzlu Cam Efekti */
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    box-shadow: var(--shadow);
 }
 
-nav .container {
+.nav-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
 }
 
-nav .logo {
+.logo {
     font-weight: 800;
-    font-size: 1.2rem;
-    color: var(--dark);
-    white-space: nowrap; /* Logonun kırılmasını engelle */
-}
-
-nav ul {
+    font-size: 1.5rem;
     display: flex;
-    list-style: none;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-main);
+}
+.logo i { color: var(--primary); filter: drop-shadow(0 0 5px var(--primary-glow)); }
+
+.nav-actions {
+    display: flex;
     gap: 15px;
-    margin: 0;
-    padding: 0;
+    align-items: center;
 }
 
-nav a {
-    text-decoration: none;
-    color: var(--dark);
-    font-weight: 500;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-    border-radius: 20px;
-    transition: 0.3s;
-    white-space: nowrap; /* Link metinlerinin kırılmasını engelle */
+button.icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
 }
+button.icon-btn:hover { background: rgba(0,0,0,0.05); }
 
-nav a:hover, nav a.active {
-    background-color: rgba(255, 0, 0, 0.1);
-    color: var(--primary);
-}
-
-/* --- GENEL YAPI --- */
-.container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding-bottom: 40px;
-}
-
-/* Hero Alanı (Başlıklar) */
-.hero-section {
-    text-align: center;
-    padding: 30px 10px;
-}
-
-.hero-section h1 {
-    font-size: 2.2rem;
-    margin-bottom: 10px;
-    line-height: 1.2;
-}
-
-.hero-section p {
-    color: var(--gray);
-    font-size: 1rem;
-    margin-bottom: 20px;
-}
-
-/* Kartlar */
-.card {
-    background: var(--card-bg);
+select.lang-select {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    padding: 5px 10px;
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
 }
 
-/* Video Grid (Izgara) */
+/* --- HERO BÖLÜMÜ --- */
+.hero {
+    text-align: center;
+    padding: 80px 20px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    background: -webkit-linear-gradient(45deg, var(--text-main), var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--text-sec);
+    margin-bottom: 50px;
+    font-weight: 300;
+}
+
+/* --- MODERN ARAMA ÇUBUĞU --- */
+.search-container {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto 60px;
+}
+
+.search-box {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 8px;
+    border-radius: 50px;
+    display: flex;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.search-box:hover, .search-box:focus-within {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px var(--primary-glow);
+    border-color: var(--primary);
+}
+
+.search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 15px 25px;
+    font-size: 1.1rem;
+    outline: none;
+    color: var(--text-main);
+}
+
+.search-box button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px var(--primary-glow);
+    transition: 0.3s;
+}
+
+.search-box button:hover {
+    transform: scale(1.1) rotate(10deg);
+    background: #cc0000;
+}
+
+/* --- TREND KARTLARI (Glass Cards) --- */
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .grid-view {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 15px;
+    gap: 25px;
+    padding-bottom: 50px;
 }
 
-.video-card {
-    background: white;
-    border-radius: 12px;
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
     overflow: hidden;
-    border: 1px solid #eee;
+    position: relative;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.video-thumb {
+.glass-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow);
+}
+
+.card-thumb {
     width: 100%;
-    height: 160px;
+    height: 180px;
     object-fit: cover;
 }
 
-.video-info {
-    padding: 12px;
+.card-content {
+    padding: 20px;
 }
 
-.video-title {
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin-bottom: 5px;
+.card-title {
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--text-main);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
-.video-meta {
-    font-size: 0.8rem;
-    color: var(--gray);
-}
-
-/* Butonlar */
-button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 24px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.95rem;
-    width: auto;
-}
-
-/* Form Elemanları */
-input, select {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-size: 1rem;
-    width: 100%; /* Mobilde tam genişlik */
-    box-sizing: border-box; /* Padding taşmasını engelle */
-    margin-bottom: 10px;
-}
-
-/* Etiketler */
-.tag-cloud {
+.card-meta {
+    font-size: 0.85rem;
+    color: var(--text-sec);
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
 }
-.tag {
-    background: #eee;
-    padding: 4px 8px;
-    border-radius: 12px;
+
+.badge {
+    background: rgba(255, 0, 0, 0.1);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 10px;
     font-size: 0.75rem;
+    font-weight: 700;
 }
 
-/* =========================================
-   MOBİL İÇİN ÖZEL AYARLAR (FIX BURADA)
-   ========================================= */
+/* Mobil Uyum */
 @media (max-width: 768px) {
-    /* 1. Menüyü alt alta al */
-    nav .container {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    /* 2. Linkleri küçült ve ortala */
-    nav ul {
-        gap: 5px;
-        flex-wrap: wrap; /* Sığmazsa alt satıra geçsin */
-        justify-content: center;
-    }
-
-    nav a {
-        font-size: 0.8rem; /* Yazı boyutunu küçült */
-        padding: 6px 10px;
-        background-color: #f5f5f5; /* Mobilde buton gibi görünsün */
-    }
-
-    /* 3. Sayfa içeriğini menünün altından kurtar */
-    body {
-        padding-top: 130px; /* Menü uzadığı için boşluğu artır */
-    }
-
-    /* 4. Başlıkları küçült */
-    .hero-section h1 {
-        font-size: 1.6rem; /* "YouTube Stratejinizi..." yazısı sığsın */
-    }
-
-    /* 5. Butonları tam genişlik yap */
-    button {
-        width: 100%;
-        display: block;
-    }
-    
-    /* 6. Kart gridlerini tek sütun yap */
-    .grid-view {
-        grid-template-columns: 1fr; /* Tek sütun */
-    }
+    nav { top: 0; width: 100%; border-radius: 0; padding: 0 15px; }
+    h1 { font-size: 2.5rem; }
+    .hero { padding-top: 40px; }
 }
