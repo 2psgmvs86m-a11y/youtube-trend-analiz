@@ -1,1 +1,130 @@
 
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ content.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .hero { background: linear-gradient(135deg, #FF0000 0%, #950101 100%); color: white; padding: 70px 0; }
+        .stat-card { background: white; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); height: 100%; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .financial-box { background: #fff; border-left: 5px solid #28a745; padding: 20px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
+        .video-card img { width: 100%; border-radius: 8px 8px 0 0; object-fit: cover; height: 180px; }
+        .video-card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/"><i class="fab fa-youtube text-danger"></i> TrendAnalyzer</a>
+            <select class="form-select form-select-sm w-auto" onchange="location = '?lang=' + this.value;">
+                <option value="tr" {% if current_lang == 'tr' %}selected{% endif %}>🇹🇷 TR</option>
+                <option value="en" {% if current_lang == 'en' %}selected{% endif %}>🇬🇧 EN</option>
+                <option value="de" {% if current_lang == 'de' %}selected{% endif %}>🇩🇪 DE</option>
+            </select>
+        </div>
+    </nav>
+
+    <div class="hero text-center">
+        <div class="container">
+            <h1 class="fw-bold display-5 mb-3">{{ content.title }}</h1>
+            <p class="lead opacity-75 mb-4">{{ content.desc }}</p>
+            
+            <form method="POST" class="d-flex justify-content-center">
+                <div class="input-group shadow-lg" style="max-width: 600px; border-radius: 50px; overflow: hidden;">
+                    <input type="text" name="query" class="form-control form-control-lg border-0 px-4" placeholder="{{ content.placeholder }}" required>
+                    <button class="btn btn-dark px-4 fw-bold" type="submit">{{ content.search_btn }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="container mt-4">
+        <div class="alert alert-danger text-center rounded-pill">{{ error }}</div>
+    </div>
+    {% endif %}
+
+    {% if result %}
+    <div class="container mt-5 mb-5">
+        
+        <div class="d-flex align-items-center mb-5 bg-white p-4 rounded-3 shadow-sm">
+            <img src="{{ result.avatar }}" class="rounded-circle border p-1" width="100" height="100">
+            <div class="ms-4">
+                <h2 class="fw-bold mb-1">{{ result.title }}</h2>
+                <p class="text-muted mb-0 small" style="max-width: 600px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ result.desc }}</p>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <i class="fas fa-users fa-2x text-primary mb-3 opacity-50"></i>
+                    <h3 class="fw-bold">{{ result.stats.subscriberCount }}</h3>
+                    <span class="text-muted text-uppercase small fw-bold">{{ content.subs }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <i class="fas fa-eye fa-2x text-danger mb-3 opacity-50"></i>
+                    <h3 class="fw-bold">{{ result.stats.viewCount }}</h3>
+                    <span class="text-muted text-uppercase small fw-bold">{{ content.views }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <i class="fas fa-video fa-2x text-warning mb-3 opacity-50"></i>
+                    <h3 class="fw-bold">{{ result.stats.videoCount }}</h3>
+                    <span class="text-muted text-uppercase small fw-bold">{{ content.videos }}</span>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold mb-3"><i class="fas fa-chart-line text-success"></i> {{ content.financial_title }}</h4>
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="financial-box d-md-flex justify-content-between align-items-center">
+                    <div class="mb-3 mb-md-0">
+                        <h5 class="text-muted mb-1">{{ content.monetization }}</h5>
+                        {% if result.monetized %}
+                            <span class="badge bg-success fs-6 px-3 py-2 rounded-pill"><i class="fas fa-check-circle"></i> {{ content.active }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary fs-6 px-3 py-2 rounded-pill"><i class="fas fa-times-circle"></i> {{ content.passive }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-md-end">
+                        <h5 class="text-muted mb-1">{{ content.est_earnings }}</h5>
+                        <h2 class="text-success fw-bold mb-0">{{ result.earnings }}</h2>
+                        <small class="text-muted" style="font-size: 10px;">{{ content.note }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="fw-bold mb-3">{{ content.latest_videos }}</h4>
+        <div class="row g-4">
+            {% for video in result.videos %}
+            <div class="col-md-4">
+                <a href="https://www.youtube.com/watch?v={{ video.id }}" target="_blank" class="text-decoration-none text-dark">
+                    <div class="card h-100 video-card">
+                        <img src="{{ video.thumb }}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold text-truncate">{{ video.title }}</h6>
+                            <small class="text-muted"><i class="far fa-calendar-alt"></i> {{ video.published }}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    {% endif %}
+
+</body>
+</html>
