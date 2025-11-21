@@ -6,216 +6,55 @@
     <title>Piyasa Analizi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-color: #fdfdfd;
-            --text-main: #212529;
-            --text-muted: #6c757d;
-            --pill-pink-bg: #f8d7da;
-            --pill-pink-text: #721c24;
-            --accent-green: #28a745;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        /* Üst Navigasyon */
-        .top-nav { padding: 15px 0; margin-bottom: 20px; }
-        .top-nav ul { list-style: none; padding: 0; display: flex; gap: 20px; align-items: center; }
-        .top-nav a { text-decoration: none; color: #4a4a4a; font-weight: 600; font-size: 0.95rem; border-bottom: 2px solid transparent; }
-        .top-nav a:hover, .top-nav a.active { color: #6f42c1; border-bottom-color: #6f42c1; }
-
-        /* Başlık ve Kontroller */
-        .main-title { font-size: 2.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; color: #000; }
-        .control-pill {
-            background: #e9ecef; border-radius: 20px; padding: 5px 15px; 
-            border: none; font-size: 0.9rem; font-weight: 600; color: #495057;
-            margin-left: 10px; cursor: pointer;
-        }
-        .btn-analyze { background: #e9ecef; color: #0d6efd; }
-
-        /* Başlangıç Placeholder (YENİ EKLENDİ) */
-        #initial-placeholder {
-            text-align: center;
-            padding: 80px 20px;
-            color: var(--text-muted);
-        }
-        #initial-placeholder i {
-            font-size: 5rem;
-            margin-bottom: 20px;
-            color: #dee2e6;
-        }
-
-        /* İçerik Alanları */
-        .section-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .section-desc { font-size: 0.95rem; color: #6c757d; margin-bottom: 20px; line-height: 1.5; }
-
-        .tag-item {
-            display: block; background-color: var(--pill-pink-bg); color: var(--pill-pink-text);
-            padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 600; font-size: 0.95rem; width: fit-content;
-        }
-
-        .stat-block { margin-bottom: 25px; }
-        .stat-text { font-size: 1.1rem; color: #333; line-height: 1.5; }
-        .stat-highlight { font-weight: 800; color: #000; }
-        .score-green { color: var(--accent-green); font-weight: 800; }
-        
-        #loader { display: none; }
-        
-        .video-row { padding: 10px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
-        .video-row img { width: 60px; height: 34px; object-fit: cover; border-radius: 4px; }
-        .video-link { text-decoration: none; color: #333; font-weight: 600; font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;}
-    </style>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-
     <div class="container">
-        <div class="top-nav">
-            <ul>
-                <li><a href="/">Ana Sayfa</a></li>
-                <li><a href="/analiz" class="active">📊 Detaylı Trendler</a></li>
-                <li><a href="/sorgula">🔍 Kanal Sorgula</a></li>
-            </ul>
-        </div>
+        <nav class="navbar d-flex justify-content-between">
+            <a class="navbar-brand" href="/"><i class="fab fa-youtube"></i> YT ANALIZ</a>
+            <div>
+                <a href="/analiz" style="margin-right:15px; text-decoration:none; font-weight:bold; color:#ea4335;">Detaylı Trendler</a>
+                <a href="/sorgula" style="text-decoration:none; color:#333;">Kanal Sorgula</a>
+            </div>
+        </nav>
 
         <div class="row align-items-start mb-4">
             <div class="col-8">
                 <h1 class="main-title">📊 Piyasa<br>Analizi & Niş<br>Keşfi</h1>
             </div>
             <div class="col-4 text-end">
-                <div class="d-flex flex-column align-items-end gap-2">
-                    <select id="regionSelect" class="control-pill">
-                        <option value="TR">Türkiye</option>
-                        <option value="US">ABD</option>
-                        <option value="DE">Almanya</option>
-                    </select>
-                    <button class="control-pill btn-analyze" onclick="fetchTrends()">Analiz Et</button>
-                </div>
+                <select id="regionSelect" class="control-pill">
+                    <option value="TR">Türkiye</option>
+                    <option value="US">ABD</option>
+                </select>
+                <button class="control-pill" style="color:#0d6efd;" onclick="fetchTrendAnalysis()">Analiz Et</button>
             </div>
         </div>
 
-        <div id="initial-placeholder">
-            <i class="fas fa-chart-line"></i>
-            <h3>Henüz analiz yapılmadı.</h3>
-            <p>Piyasa durumunu görmek için sağ üstten bir bölge seçin ve <strong>"Analiz Et"</strong> butonuna tıklayın.</p>
+        <div id="initial-placeholder" style="text-align:center; padding:50px; color:#999;">
+            <i class="fas fa-chart-pie" style="font-size:4rem; margin-bottom:20px;"></i>
+            <h3>Analiz bekleniyor...</h3>
         </div>
 
-        <div id="loader" class="text-center py-5">
-            <div class="spinner-border text-secondary" role="status"></div>
-        </div>
+        <div id="loader" class="loader"><div class="spinner-border text-danger"></div></div>
 
         <div class="row" id="results-area" style="display: none;">
-            <div class="col-md-6 mb-5">
-                <h3 class="section-title">🔑 En Çok Aranan<br>Anahtar Kelimeler</h3>
-                <p class="section-desc">Trend videolarda en sık<br>geçen ve rekabet<br>yaratan kelimeler.</p>
+            <div class="col-md-6">
+                <h3 class="section-title">🔑 En Çok Arananlar</h3>
                 <div id="tag-list"></div>
             </div>
-
             <div class="col-md-6">
-                <h3 class="section-title">⚡ Rekabet / Niş<br>Durumu</h3>
-                <div class="stat-block">
-                    <div class="stat-text">Bu bölgedeki trendlerde toplam<br><span class="stat-highlight" id="total-tags">0</span> etiket kullanıldı.</div>
-                </div>
-                <div class="stat-block">
-                    <div class="stat-text">Baskın Kategori:<br><span class="stat-highlight" id="dominant-cat">-</span><br><small class="text-muted">(Otomatik Tespit)</small></div>
-                </div>
-                <div class="stat-block">
-                    <div class="stat-text">Fırsat Skoru: <span id="opp-score-text">-</span><br><small class="text-muted" id="opp-desc">-</small></div>
-                </div>
+                <h3 class="section-title">⚡ İstatistikler</h3>
+                <div style="font-size:1.2rem;">Toplam Etiket: <span id="total-tags" class="stat-highlight">0</span></div>
             </div>
         </div>
 
-        <div id="video-area" class="mt-4 mb-5" style="display: none;">
-            <hr class="mb-4">
-            <h5 class="fw-bold mb-3">Trend Kaynakları</h5>
+        <div id="video-area" style="display:none; margin-top:30px;">
+            <h5>Trend Kaynakları</h5>
             <div id="video-list-container"></div>
         </div>
     </div>
 
-    <script>
-        async function fetchTrends() {
-            const region = document.getElementById('regionSelect').value;
-            
-            // Başlangıç ekranını gizle, yükleniyor'u göster
-            document.getElementById('initial-placeholder').style.display = 'none';
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('results-area').style.display = 'none';
-            document.getElementById('video-area').style.display = 'none';
-
-            try {
-                const res = await fetch(`/api/trending?region=${region}&limit=20`);
-                const data = await res.json();
-                renderPage(data);
-            } catch (e) {
-                alert("Veri çekilemedi.");
-                // Hata olursa başlangıç ekranını geri getir
-                document.getElementById('initial-placeholder').style.display = 'block';
-            } finally {
-                document.getElementById('loader').style.display = 'none';
-            }
-        }
-
-        function renderPage(videos) {
-            // ... (Veri işleme kısmı aynı) ...
-            let allTags = [];
-            videos.forEach(v => {
-                if(v.tags) {
-                    let tags = [];
-                    if(Array.isArray(v.tags)) tags = v.tags;
-                    else try { tags = JSON.parse(v.tags.replace(/'/g, '"')); } catch(e){}
-                    allTags = allTags.concat(tags);
-                }
-            });
-
-            const counts = {};
-            allTags.forEach(t => { let key = t.toLowerCase(); counts[key] = (counts[key] || 0) + 1; });
-            const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 8);
-
-            const tagContainer = document.getElementById('tag-list');
-            tagContainer.innerHTML = '';
-            sorted.forEach(([tag, count]) => {
-                tagContainer.innerHTML += `<div class="tag-item">#${tag} (${count})</div>`;
-            });
-
-            document.getElementById('total-tags').innerText = allTags.length;
-            
-            let topText = sorted.map(x=>x[0]).join(" ");
-            let cat = "Karışık / Genel";
-            if(topText.includes("oyun") || topText.includes("minecraft") || topText.includes("roblox")) cat = "Eğlence & Oyun";
-            else if(topText.includes("haber") || topText.includes("siyaset") || topText.includes("sondakika")) cat = "Haber & Gündem";
-            else if(topText.includes("dizi") || topText.includes("fragman") || topText.includes("bölüm")) cat = "Dizi & Film";
-            else if(topText.includes("spor") || topText.includes("futbol") || topText.includes("gol")) cat = "Spor";
-            
-            document.getElementById('dominant-cat').innerText = cat;
-
-            const uniqueRatio = Object.keys(counts).length / (allTags.length || 1);
-            const scoreEl = document.getElementById('opp-score-text');
-            const descEl = document.getElementById('opp-desc');
-
-            if(uniqueRatio > 0.5) {
-                scoreEl.innerHTML = 'Yüksek'; scoreEl.className = 'score-green'; descEl.innerText = '(Çeşitlilik Var)';
-            } else {
-                scoreEl.innerHTML = 'Düşük'; scoreEl.style.color = '#dc3545'; descEl.innerText = '(Rekabet Çok Yüksek)';
-            }
-
-            const vidContainer = document.getElementById('video-list-container');
-            vidContainer.innerHTML = '';
-            videos.slice(0,5).forEach(v => {
-                vidContainer.innerHTML += `
-                    <div class="video-row">
-                        <img src="${v.thumbnail}">
-                        <a href="${v.url}" target="_blank" class="video-link">${v.title}</a>
-                    </div>
-                `;
-            });
-
-            // Sonuçları göster
-            document.getElementById('results-area').style.display = 'flex';
-            document.getElementById('video-area').style.display = 'block';
-        }
-    </script>
+    <script src="/static/app.js"></script>
 </body>
 </html>
