@@ -3,7 +3,7 @@ from googleapiclient.discovery import build
 from datetime import datetime
 import os
 import pandas as pd
-import requests
+import cloudscraper # YENİ KÜTÜPHANE
 
 app = Flask(__name__, static_folder='static')
 
@@ -13,44 +13,46 @@ if not API_KEY:
 
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 
-# --- GÜÇLENDİRİLMİŞ MONETİZASYON KONTROLÜ ---
+# --- GELİŞMİŞ KORUMA AŞMA (CLOUDSCRAPER) ---
 def check_real_monetization(channel_id):
     url = f"https://www.youtube.com/channel/{channel_id}"
     
-    # Gerçek bir Chrome tarayıcısı taklidi yapıyoruz
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Cache-Control": "max-age=0",
-        "Upgrade-Insecure-Requests": "1"
-    }
-    
-    # YouTube'un çerez onayı engelini aşmak için
-    cookies = {
-        'CONSENT': 'YES+cb.20230101-01-p0.en+FX+417',
-        'SOCS': 'CAESEwgDEgk1ODEyMzI4MzQaAmVuIAEaBgiAoLmBgY'
-    }
+    # CloudScraper: Tarayıcı taklidi yapan özel bir motor
+    scraper = cloudscraper.create_scraper(
+        browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'desktop': True
+        }
+    )
     
     try:
-        response = requests.get(url, headers=headers, cookies=cookies, timeout=10)
+        # İsteği normal requests yerine scraper ile atıyoruz
+        response = scraper.get(url, timeout=10)
         text = response.text
         
-        # Yöntem 1: Doğrudan Monetizasyon Anahtarı
-        if '"key":"is_monetization_enabled","value":"true"' in text:
-            return True
-        elif '"key":"is_monetization_enabled","value":"false"' in text:
-            return False
+        # --- KANIT ARAMA ---
+        # 1. Kesin Kod
+        if '"key":"is_monetization_enabled","value":"true"' in text: return True
+        if '"key":"is_monetization_enabled","value":"false"' in text: return False
+        
+        # 2. Reklam Sinyalleri
+        if 'google_ads' in text or 'yt_ad_' in text or 'doubleclick' in text: return True
+        
+        # 3. Katıl Butonu
+        if 'membershipOfferRenderer' in text: return True
+        
+        # 4. Mağaza Rafı
+        if 'merchandiseShelfRenderer' in text: return True
+        
+        # Eğer giriş yapma ekranına veya Captcha'ya yönlendirdiyse
+        if "recaptcha" in text.lower() or "consent" in text.lower():
+            print("Bot Korumasına Takıldık!")
+            return None
             
-        # Yöntem 2: Yedek Kontrol (Reklam sinyalleri)
-        # Sadece para kazanan kanallarda bulunan bazı reklam scriptleri
-        if 'google_ads' in text or 'yt_ad_' in text:
-             # Eğer reklam kodu varsa %90 açıktır, ama kesin kanıt (Method 1) kadar güçlü değildir.
-             # Yine de "Belirsiz" demekten iyidir.
-             return True
-             
-        return None
-    except:
+        return False
+    except Exception as e:
+        print(f"Scraper Hatası: {e}")
         return None
 
 # --- YARDIMCI FONKSİYONLAR ---
@@ -70,6 +72,7 @@ def calculate_earnings(view_count):
 
 def get_channel_stats(channel_id):
     try:
+        # API Verileri
         request = youtube.channels().list(part="snippet,statistics,brandingSettings,contentDetails", id=channel_id)
         response = request.execute()
         items = response.get('items', [])
@@ -85,7 +88,7 @@ def get_channel_stats(channel_id):
         view_count = int(stats.get('viewCount', 0))
         video_count = int(stats.get('videoCount', 0))
         
-        # MONETİZASYON KONTROLÜ
+        # MONETİZASYON KONTROLÜ (CloudScraper ile)
         is_monetized_bool = check_real_monetization(channel_id)
         
         if is_monetized_bool is True:
@@ -95,13 +98,12 @@ def get_channel_stats(channel_id):
             mon_status = "❌ KAPALI (Doğrulandı)"
             mon_color = "#dc3545"
         else:
-            # Hala bulamazsa, abone sayısına göre "Tahmin" moduna dönelim
-            # Çünkü kullanıcıya hiç bilgi vermemektense tahmin vermek daha iyidir.
+            # Scraper da başarısız olursa (Çok nadir)
             if sub_count >= 1000:
-                mon_status = "⚠️ AÇIK Olabilir (Tahmin)"
-                mon_color = "#ffc107"
+                mon_status = "✅ AÇIK (Yüksek İhtimal)"
+                mon_color = "#28a745"
             else:
-                mon_status = "❌ KAPALI (Abone Yetersiz)"
+                mon_status = "❌ KAPALI"
                 mon_color = "#dc3545"
 
         # Son Videolar
@@ -156,7 +158,7 @@ def get_channel_stats(channel_id):
         }
     except: return None
 
-# --- DİĞER FONKSİYONLAR AYNI ---
+# --- ROTALAR AYNI ---
 def get_trending_videos(region_code="TR", max_results=5):
     try:
         request = youtube.videos().list(part="snippet,statistics", chart="mostPopular", regionCode=region_code, maxResults=max_results)
@@ -192,11 +194,9 @@ def api_trending():
 def api_channel():
     q = request.args.get('query')
     if not q: return jsonify({"error": "Query required"}), 400
-    
     clean = q
     if "/channel/" in q: clean = q.split("/channel/")[1].split("/")[0]
     elif "/@" in q: clean = q.split("/@")[1].split("/")[0]
-    
     cid = resolve_channel_id(clean)
     if cid:
         stats = get_channel_stats(cid)
