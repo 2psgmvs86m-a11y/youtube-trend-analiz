@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- TEMEL RENK AYARLARI --- */
         :root { 
             --dark-bg: #0b0e11; 
             --card-bg: #161b22; 
@@ -45,14 +44,12 @@
         .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 0 20px; border-radius: 0 8px 8px 0; white-space: nowrap; }
         .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
 
-        /* Cards */
         .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 20px; height: 100%; }
         .channel-banner { height: 120px; width: 100%; object-fit: cover; border-radius: 12px 12px 0 0; opacity: 0.6; }
         
         .profile-header { margin-top: -50px; position: relative; z-index: 2; text-align: center; }
         .avatar-overlay { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--card-bg); background: #000; }
         
-        /* Grade Badge */
         .grade-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #30363d; }
         .grade-box { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 2rem; font-weight: 800; color: white; flex-shrink: 0; }
         .grade-A, .grade-A_plus { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
@@ -62,7 +59,6 @@
 
         .tag-badge { background: #21262d; color: #58a6ff; font-size: 0.8rem; padding: 5px 10px; border-radius: 6px; margin: 0 4px 4px 0; display: inline-block; border: 1px solid #30363d; }
 
-        /* Finance Box Renkleri */
         .finance-active { background: linear-gradient(145deg, #064e3b 0%, #161b22 100%); border: 1px solid #10b981; }
         .finance-passive { background: linear-gradient(145deg, #450a0a 0%, #161b22 100%); border: 1px solid #ef4444; }
         
@@ -205,6 +201,30 @@
                         </h5>
                     </div>
                     <i class="fas fa-chart-line text-success opacity-50 fa-2x"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">{{ content.hidden_content }}</div>
+                        <h5 class="mb-0 fw-bold {{ 'text-danger' if result.hidden_videos > 0 else 'text-success' }}">
+                            {{ result.hidden_videos }} <small class="text-white-50" style="font-size: 0.7rem">Video</small>
+                        </h5>
+                    </div>
+                    <i class="fas fa-user-secret opacity-50 fa-2x"></i>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">{{ content.consistency }}</div>
+                        <h5 class="mb-0 fw-bold text-white">{{ result.consistency.label }}</h5>
+                        <small class="text-white-50" style="font-size: 0.7rem">Top Video: {{ result.consistency.top_video_views }}</small>
+                    </div>
+                    <i class="fas fa-balance-scale opacity-50 fa-2x"></i>
                 </div>
             </div>
         </div>
