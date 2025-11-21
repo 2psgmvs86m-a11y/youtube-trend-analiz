@@ -4,23 +4,41 @@ from datetime import datetime
 import os
 import pandas as pd
 
-app = Flask(__name__, static_folder='static') 
+app = Flask(__name__, static_folder='static')
 
-# --- GUVENLIK: API Anahtarini Ortam Degiskenlerinden Cek ---
 API_KEY = os.environ.get("YOUTUBE_API_KEY")
-
 if not API_KEY:
-    print("HATA: YouTube API anahtarı ayarlanmamış.")
+    print("HATA: API Anahtarı yok.")
     exit()
 
-# API Servisini Baslatma
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 
-# --- Veri Cekme Fonksiyonlari ---
+# --- YARDIMCI FONKSİYONLAR ---
 
-def get_trending_videos(region_code="TR", max_results=30):
-    """Belirtilen bolgedeki trend videoları çeker."""
-    # (Mevcut kodunuz)
+def resolve_channel_id(input_str):
+    """Girdiyi (Link, Handle, İsim) Kanal ID'sine çevirir."""
+    # 1. Eğer zaten ID formatındaysa (UC ile başlar ve 24 karakterdir)
+    if input_str.startswith("UC") and len(input_str) == 24:
+        return input_str
+
+    # 2. Değilse, YouTube Search API ile arama yap
+    try:
+        search_response = youtube.search().list(
+            q=input_str,
+            type='channel',
+            part='snippet',
+            maxResults=1
+        ).execute()
+        
+        items = search_response.get('items', [])
+        if items:
+            return items[0]['snippet']['channelId']
+    except:
+        return None
+    return None
+
+def get_trending_videos(region_code="TR", max_results=10):
+    """Trendleri çeker."""
     request = youtube.videos().list(
         part="snippet,statistics",
         chart="mostPopular",
@@ -31,88 +49,103 @@ def get_trending_videos(region_code="TR", max_results=30):
     
     video_data = []
     for item in response.get("items", []):
+        # Etiketleri (Tags) alalım - Rekabet analizi için
+        tags = item['snippet'].get('tags', [])
+        
         video_data.append({
             "title": item['snippet']['title'],
             "channel": item['snippet']['channelTitle'],
             "views": int(item['statistics'].get('viewCount', 0)),
-            "url": f"https://www.youtube.com/watch?v={item['id']}"
+            "likes": int(item['statistics'].get('likeCount', 0)),
+            "url": f"https://www.youtube.com/watch?v={item['id']}",
+            "thumbnail": item['snippet']['thumbnails']['medium']['url'],
+            "tags": tags
         })
     return pd.DataFrame(video_data)
 
 def get_channel_stats(channel_id):
-    """Kanal ID'si ile tüm detaylı istatistikleri çeker."""
+    """Kanal detaylarını çeker."""
     request = youtube.channels().list(
-        part="snippet,statistics,contentDetails,status",
+        part="snippet,statistics,brandingSettings,topicDetails",
         id=channel_id
     )
     response = request.execute()
-    item = response.get('items', [{}])[0]
+    items = response.get('items', [])
     
-    if not item:
+    if not items:
         return None
         
+    item = items[0]
     snippet = item.get('snippet', {})
     stats = item.get('statistics', {})
-    status = item.get('status', {})
+    branding = item.get('brandingSettings', {})
     
-    # Kanal Kayıt Tarihini Formatlama
-    published_at_str = snippet.get('publishedAt')
-    if published_at_str:
-        published_date = datetime.strptime(published_at_str, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%d %B %Y')
+    # Veri Hazırlığı
+    published_at = snippet.get('publishedAt', '')
+    if published_at:
+        published_date = datetime.strptime(published_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%d %B %Y')
     else:
         published_date = "Bilinmiyor"
 
-    # Para Kazanma Durumu (Monetizasyon) Tahmini
-    # API doğrudan bilgi vermediği için YouTube Partner Programı (YPP) kriterlerini temel alıyoruz.
-    monetization_status = "Bilinmiyor"
     sub_count = int(stats.get('subscriberCount', 0))
-    # YPP kriterleri: 1000 abone ve 4000 saat izlenme (izlenme saati API'dan çekilemez, yaklaşık tahminde bulunuyoruz)
-    if sub_count >= 1000:
-        monetization_status = "Yüksek İhtimalle AÇIK (1K Abone Şartı Tamam)"
-    else:
-        monetization_status = "Kapalı (1K Abone Şartı Eksik)"
+    monetization = "✅ AÇIK Olabilir" if sub_count >= 1000 else "❌ KAPALI (Abone Yetersiz)"
 
-    # Verileri birleştirme
-    data = {
+    return {
         "title": snippet.get('title'),
-        "subscribers": f"{int(stats.get('subscriberCount', 0)):,}",
-        "views": f"{int(stats.get('viewCount', 0)):,}",
-        "category": snippet.get('customUrl', 'Yok'),
+        "description": snippet.get('description', ''),
+        "customUrl": snippet.get('customUrl', ''),
+        "country": snippet.get('country', 'TR'),
         "creation_date": published_date,
-        "is_monetized": monetization_status,
-        "country": snippet.get('country', 'Belirtilmemiş'),
+        "subscribers": f"{sub_count:,}",
+        "views": f"{int(stats.get('viewCount', 0)):,}",
+        "video_count": f"{int(stats.get('videoCount', 0)):,}",
+        "is_monetized": monetization,
+        "keywords": branding.get('channel', {}).get('keywords', ''),
+        "banner_url": branding.get('image', {}).get('bannerExternalUrl', ''),
         "thumbnail": snippet.get('thumbnails', {}).get('high', {}).get('url')
     }
-    return data
 
-# --- API Uç Noktalari ---
+# --- ROTALAR ---
 
 @app.route('/')
 def serve_index():
-    """Kök URL'ye (/) gelen isteklere static/index.html dosyasını döndürür."""
-    # Trend Analizi ana sayfa olacak
     return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/trending', methods=['GET'])
 def trending_data():
-    """HTML/JS'in cekecegi JSON verisini döndürür."""
     region = request.args.get('region', 'TR')
-    df = get_trending_videos(region_code=region, max_results=30)
+    # Frontend'den limit isteği gelirse onu kullan, yoksa 30 getir
+    limit = int(request.args.get('limit', 30)) 
+    
+    df = get_trending_videos(region_code=region, max_results=limit)
     return jsonify(df.to_dict(orient='records'))
 
-# --- YENİ KANAL SORGULAMA ROTASI ---
 @app.route('/api/channel_stats', methods=['GET'])
 def channel_stats_data():
-    """Kanal ID'sine göre detaylı istatistik döndürür."""
-    channel_id = request.args.get('id')
-    if not channel_id:
-        return jsonify({"error": "Channel ID required"}), 400
-
-    stats = get_channel_stats(channel_id)
-    if stats:
-        return jsonify(stats)
-    else:
-        return jsonify({"error": "Channel not found or API error"}), 404
+    # Kullanıcı link, handle (@) veya isim girebilir
+    query = request.args.get('query')
+    
+    if not query:
+        return jsonify({"error": "Query required"}), 400
+    
+    # Linkten ID çıkarma (Basit temizlik)
+    clean_query = query
+    if "youtube.com" in query or "youtu.be" in query:
+        if "/channel/" in query:
+            clean_query = query.split("/channel/")[1].split("/")[0]
+        elif "/@" in query:
+            clean_query = query.split("/@")[1].split("/")[0] # Handle'ı al
+        # Link temizlendiyse veya direkt isim geldiyse resolve et
+    
+    # ID'yi bul (API ile)
+    channel_id = resolve_channel_id(clean_query)
+    
+    if channel_id:
+        stats = get_channel_stats(channel_id)
+        if stats:
+            return jsonify(stats)
+    
+    return jsonify({"error": "Kanal bulunamadı. Lütfen ismini doğru yazdığınızdan emin olun."}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
