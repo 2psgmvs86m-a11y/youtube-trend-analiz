@@ -12,26 +12,27 @@ YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
 translations = {
     'tr': {
         'title': 'YouTube Kanal Denetçisi',
-        'search_btn': 'Kanali Denetle',
+        'search_btn': 'KANALI DENETLE',
         'placeholder': 'Kanal Adı veya Linki...',
         'grade': 'Kanal Notu',
-        'upload_schedule': 'Video Yükleme Saati',
+        'upload_schedule': 'Yükleme Sıklığı',
         'tags': 'Kanal Etiketleri',
-        'category': 'Tahmini Kategori',
+        'category': 'Kategori',
         'monetization': 'Para Kazanma',
         'earnings': 'Tahmini Aylık Gelir',
-        'active': 'AÇIK ✅',
+        'active': 'AÇIK / AKTİF ✅',
         'passive': 'KAPALI ❌',
         'subs': 'Abone',
         'views': 'Görüntülenme',
         'videos': 'Video',
         'engagement': 'Etkileşim Oranı',
         'error': 'Kanal bulunamadı!',
-        'latest': 'Son Yüklemeler'
+        'latest': 'Son Yüklemeler',
+        'warn_monetization': 'Para kazanma özellikleri aktif görünmüyor.'
     },
     'en': {
         'title': 'YouTube Channel Auditor',
-        'search_btn': 'Audit Channel',
+        'search_btn': 'AUDIT CHANNEL',
         'placeholder': 'Channel Name or Link...',
         'grade': 'Channel Grade',
         'upload_schedule': 'Upload Schedule',
@@ -46,11 +47,12 @@ translations = {
         'videos': 'Videos',
         'engagement': 'Engagement Rate',
         'error': 'Channel not found!',
-        'latest': 'Latest Uploads'
+        'latest': 'Latest Uploads',
+        'warn_monetization': 'Monetization features do not seem active.'
     },
     'de': {
         'title': 'YouTube-Kanal-Auditor',
-        'search_btn': 'Kanal prüfen',
+        'search_btn': 'KANAL PRÜFEN',
         'placeholder': 'Kanalname oder Link...',
         'grade': 'Kanalnote',
         'upload_schedule': 'Upload-Zeitplan',
@@ -65,7 +67,8 @@ translations = {
         'videos': 'Videos',
         'engagement': 'Engagement-Rate',
         'error': 'Kanal nicht gefunden!',
-        'latest': 'Neueste Uploads'
+        'latest': 'Neueste Uploads',
+        'warn_monetization': 'Monetarisierungsfunktionen scheinen nicht aktiv zu sein.'
     }
 }
 
@@ -88,8 +91,37 @@ def calculate_grade(sub_count, view_count, video_count):
     if engagement > 1: return "C"
     return "D"
 
+# --- YENİ EKLENEN FONKSİYON: SCRAPING ---
+def check_real_monetization(channel_id):
+    """
+    Kanal sayfasına gidip kaynak kodunda 'is_monetization_enabled' 
+    değerini arar. API'den daha kesin sonuç verir.
+    """
+    try:
+        url = f"https://www.youtube.com/channel/{channel_id}"
+        # YouTube bot olduğumuzu anlamasın diye tarayıcı kimliği gönderiyoruz
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        # 3 saniye içinde cevap gelmezse beklemeyi bırak (site hızını düşürmemek için)
+        response = requests.get(url, headers=headers, timeout=3)
+        text = response.text
+        
+        # 1. İşaret: Kaynak kodunda doğrudan monetization etiketi
+        if '"key":"is_monetization_enabled","value":"true"' in text:
+            return True
+        
+        # 2. İşaret: "Katıl" butonu (sponsorButtonRenderer) varsa kesin açıktır
+        if 'sponsorButtonRenderer' in text:
+            return True
+            
+        return False
+    except Exception as e:
+        print(f"Scraping hatası: {e}")
+        return False 
+# ------------------------------------------
+
 def get_niche_cpm(tags_list, title, desc):
-    # HATA BURADAYDI - DÜZELTİLDİ
     full_text = " ".join(tags_list).lower() + " " + title.lower() + " " + desc.lower()
     
     finance_keys = ['finance', 'crypto', 'bitcoin', 'money', 'business', 'finans', 'para', 'borsa']
@@ -111,7 +143,7 @@ def get_niche_cpm(tags_list, title, desc):
     
     return 2.00, "Genel / Karma 🌍"
 
-def get_channel_data(query):
+def get_channel_data(query, lang_code='tr'):
     if not YOUTUBE_API_KEY: raise Exception("API Key Yok!")
 
     search_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={query}&type=channel&key={YOUTUBE_API_KEY}"
@@ -163,11 +195,22 @@ def get_channel_data(query):
 
     cpm, niche_name = get_niche_cpm(keywords, snippet['title'], snippet['description'])
     
+    # Gelir Tahmini (Monetization kapalıysa 0 göstereceğiz)
     est_monthly_views = view_count * 0.03 
     monthly_rev = (est_monthly_views / 1000) * cpm
-    earnings_str = f"${monthly_rev * 0.8:,.0f} - ${monthly_rev * 1.2:,.0f}"
-
-    is_monetized = sub_count >= 1000 and view_count > 50000
+    
+    # --- PARA KAZANMA KONTROLÜ (GÜNCELLENDİ) ---
+    is_monetized = False
+    # Sadece abone sayısı 1000 üzerindeyse sayfa kaynağını kontrol et (Performans için)
+    if sub_count >= 1000:
+        is_monetized = check_real_monetization(channel_id)
+    
+    # Eğer kapalıysa geliri sıfırla, açıksa hesaplanan değeri göster
+    earnings_str = f"${monthly_rev * 0.8:,.0f} - ${monthly_rev * 1.2:,.0f}" if is_monetized else "$0"
+    
+    status_key = 'active' if is_monetized else 'passive'
+    warning_text = translations[lang_code]['warn_monetization'] if not is_monetized else ""
+    # ---------------------------------------------
 
     grade = calculate_grade(sub_count, view_count, video_count)
 
@@ -184,6 +227,8 @@ def get_channel_data(query):
         'upload_schedule': peak_hour_str,
         'tags': keywords,
         'monetized': is_monetized,
+        'status_key': status_key, # HTML için gerekli
+        'warning_text': warning_text,
         'earnings': earnings_str,
         'videos': videos
     }
@@ -201,13 +246,15 @@ def index():
         query = request.form.get('query')
         if query:
             try:
-                result = get_channel_data(query)
+                # Dili de gönderiyoruz ki uyarı mesajı o dilde dönsün
+                result = get_channel_data(query, lang)
                 if not result: error = content['error']
             except Exception as e:
                 print(e)
-                error = "API Hatası / Veri Çekilemedi"
+                error = "API Hatası veya Kota Doldu"
 
     return render_template('index.html', content=content, current_lang=lang, result=result, error=error)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
