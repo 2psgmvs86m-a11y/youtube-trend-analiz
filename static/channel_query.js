@@ -5,8 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const channelDetails = document.getElementById('channel-details');
     const loadingSpinner = document.getElementById('loading-spinner');
 
-    async function fetchChannelStats() {
-        const query = channelInput.value.trim();
+    // --- YENİ: URL PARAMETRESİNİ KONTROL ET ---
+    // Eğer kullanıcı ana sayfadan geldiyse (?q=MrBeast gibi), otomatik başlat
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryFromUrl = urlParams.get('q');
+
+    if (queryFromUrl) {
+        channelInput.value = queryFromUrl; // Kutucuğa yaz
+        fetchChannelStats(queryFromUrl);   // Aramayı başlat
+    }
+
+    async function fetchChannelStats(manualQuery = null) {
+        // Eğer manuelQuery (URL'den gelen) varsa onu kullan, yoksa input'tan al
+        const query = manualQuery || channelInput.value.trim();
 
         if (!query) {
             alert("Lütfen bir kanal adı veya linki girin.");
@@ -17,8 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         channelDetails.innerHTML = '';
         loadingSpinner.classList.remove('spinner-hidden');
         
-        // Girdiyi olduğu gibi Backend'e atıyoruz (Link, isim veya handle)
-        // Backend halledecek.
         const apiEndpoint = `/api/channel_stats?query=${encodeURIComponent(query)}`;
 
         try {
@@ -26,58 +35,60 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingSpinner.classList.add('spinner-hidden');
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Kanal bulunamadı.");
+                throw new Error("Kanal bulunamadı.");
             }
 
             const data = await response.json();
             
-            // HTML Oluşturma (v2 Tasarım)
+            // Anahtar kelimeleri düzelt
+            let keywordHTML = '';
+            if (data.keywords) {
+                keywordHTML = data.keywords.replace(/"/g, '').split(' ')
+                    .filter(k => k.length > 1)
+                    .map(k => `<span class="tag">#${k}</span>`).join('');
+            } else {
+                keywordHTML = '<span style="color:#999; font-size:0.8rem;">Etiket yok</span>';
+            }
+
             channelDetails.innerHTML = `
                 <div style="text-align: center; margin-bottom: 30px;">
-                    ${data.banner_url ? `<img src="${data.banner_url}" style="width:100%; height: 150px; object-fit: cover; border-radius: 12px; margin-bottom: -40px;">` : ''}
-                    <img src="${data.thumbnail}" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; position: relative;">
-                    <h2 style="margin: 10px 0;">${data.title}</h2>
+                    ${data.banner_url ? `<img src="${data.banner_url}" style="width:100%; height: 150px; object-fit: cover; border-radius: 12px; margin-bottom: -50px; position: relative; z-index: 1;">` : ''}
+                    <img src="${data.thumbnail}" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; position: relative; z-index: 2; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <h2 style="margin: 15px 0 5px 0;">${data.title}</h2>
                     <p style="color: #666;">${data.customUrl} • ${data.country}</p>
                 </div>
 
-                <div class="grid-view" style="grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; margin-bottom: 30px;">
-                    <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-                        <div style="font-size: 1.2rem; font-weight: bold;">${data.subscribers}</div>
-                        <div style="font-size: 0.8rem;">Abone</div>
+                <div class="grid-view" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; text-align: center; margin-bottom: 30px;">
+                    <div style="background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee;">
+                        <div style="font-weight: 800; font-size: 1.1rem;">${data.subscribers}</div>
+                        <div style="font-size: 0.8rem; color: #666;">Abone</div>
                     </div>
-                    <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-                        <div style="font-size: 1.2rem; font-weight: bold;">${data.views}</div>
-                        <div style="font-size: 0.8rem;">İzlenme</div>
+                    <div style="background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee;">
+                        <div style="font-weight: 800; font-size: 1.1rem;">${data.views}</div>
+                        <div style="font-size: 0.8rem; color: #666;">İzlenme</div>
                     </div>
-                    <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-                        <div style="font-size: 1.2rem; font-weight: bold;">${data.video_count}</div>
-                        <div style="font-size: 0.8rem;">Video</div>
-                    </div>
-                     <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-                        <div style="font-size: 0.9rem; font-weight: bold; color: ${data.is_monetized.includes('AÇIK') ? 'green' : 'red'}">${data.is_monetized}</div>
-                        <div style="font-size: 0.8rem;">Para Kazanma</div>
+                    <div style="background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee;">
+                        <div style="font-weight: 800; font-size: 1.1rem;">${data.video_count}</div>
+                        <div style="font-size: 0.8rem; color: #666;">Video</div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <h3>Kanal SEO Etiketleri</h3>
-                    <div class="tag-cloud">
-                        ${data.keywords ? data.keywords.split(' ').map(k => `<span class="tag">#${k.replace(/"/g, '')}</span>`).join('') : 'Etiket bulunamadı.'}
-                    </div>
+                <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin-top:0; font-size: 1rem;">Kanal SEO Etiketleri</h3>
+                    <div class="tag-cloud">${keywordHTML}</div>
                 </div>
-                
-                <div class="card">
-                    <h3>Hakkında</h3>
-                    <p style="white-space: pre-line;">${data.description}</p>
+
+                <div class="glass-card" style="padding: 20px;">
+                    <h3 style="margin-top:0; font-size: 1rem;">Hakkında</h3>
+                    <p style="white-space: pre-line; font-size: 0.9rem; color: #444; line-height: 1.6;">${data.description || "Açıklama yok."}</p>
                 </div>
             `;
 
         } catch (error) {
             loadingSpinner.classList.add('spinner-hidden');
-            channelDetails.innerHTML = `<p style="color: red; text-align: center;">${error.message}</p>`;
+            channelDetails.innerHTML = `<p style="color: red; text-align: center; margin-top: 20px;">❌ ${error.message}</p>`;
         }
     }
 
-    analyzeButton.addEventListener('click', fetchChannelStats);
+    analyzeButton.addEventListener('click', () => fetchChannelStats());
 });
