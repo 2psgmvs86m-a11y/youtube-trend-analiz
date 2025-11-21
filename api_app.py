@@ -1,59 +1,48 @@
 from flask import Flask, jsonify, request, send_from_directory
 from googleapiclient.discovery import build
-from datetime import datetime
 import os
 import pandas as pd
-import cloudscraper # YENİ KÜTÜPHANE
+import cloudscraper # Scraper şart
 
 app = Flask(__name__, static_folder='static')
 
 API_KEY = os.environ.get("YOUTUBE_API_KEY")
-if not API_KEY:
-    print("HATA: API Anahtarı yok.")
+if not API_KEY: print("HATA: API Anahtarı yok.")
 
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 
-# --- GELİŞMİŞ KORUMA AŞMA (CLOUDSCRAPER) ---
-def check_real_monetization(channel_id):
+# --- EN KATI KONTROL MEKANİZMASI ---
+def check_strict_monetization(channel_id):
     url = f"https://www.youtube.com/channel/{channel_id}"
     
-    # CloudScraper: Tarayıcı taklidi yapan özel bir motor
-    scraper = cloudscraper.create_scraper(
-        browser={
-            'browser': 'chrome',
-            'platform': 'windows',
-            'desktop': True
-        }
-    )
+    # Tarayıcı Taklidi
+    scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'windows', 'desktop': True})
     
     try:
-        # İsteği normal requests yerine scraper ile atıyoruz
         response = scraper.get(url, timeout=10)
         text = response.text
         
-        # --- KANIT ARAMA ---
-        # 1. Kesin Kod
-        if '"key":"is_monetization_enabled","value":"true"' in text: return True
-        if '"key":"is_monetization_enabled","value":"false"' in text: return False
+        # 1. KESİN KANIT (True/False anahtarı)
+        if '"key":"is_monetization_enabled","value":"true"' in text:
+            return True
+        if '"key":"is_monetization_enabled","value":"false"' in text:
+            return False
+
+        # 2. YAN KANITLAR (Sadece %100 Para Kazandıran Özellikler)
+        # Dikkat: Google Ads scriptlerini kaldırdım, onlar yanıltıyor.
         
-        # 2. Reklam Sinyalleri
-        if 'google_ads' in text or 'yt_ad_' in text or 'doubleclick' in text: return True
-        
-        # 3. Katıl Butonu
+        # Katıl Butonu (Sadece Partnerlerde olur)
         if 'membershipOfferRenderer' in text: return True
-        
-        # 4. Mağaza Rafı
+        # Mağaza Rafı (Merch Shelf)
         if 'merchandiseShelfRenderer' in text: return True
         
-        # Eğer giriş yapma ekranına veya Captcha'ya yönlendirdiyse
-        if "recaptcha" in text.lower() or "consent" in text.lower():
-            print("Bot Korumasına Takıldık!")
-            return None
-            
+        # Eğer hiçbir şey bulamadıysak ve sayfa yüklendiyse -> KAPALIDIR.
+        # Çünkü açık olsaydı yukarıdakilerden biri kesin olurdu.
         return False
+        
     except Exception as e:
-        print(f"Scraper Hatası: {e}")
-        return None
+        print(f"Tarama Hatası: {e}")
+        return None # Hata durumunda 'Bilinmiyor' dönecek
 
 # --- YARDIMCI FONKSİYONLAR ---
 def resolve_channel_id(input_str):
@@ -73,43 +62,39 @@ def calculate_earnings(view_count):
 def get_channel_stats(channel_id):
     try:
         # API Verileri
-        request = youtube.channels().list(part="snippet,statistics,brandingSettings,contentDetails", id=channel_id)
-        response = request.execute()
-        items = response.get('items', [])
-        if not items: return None
+        req = youtube.channels().list(part="snippet,statistics,brandingSettings,contentDetails", id=channel_id)
+        res = req.execute()
+        if not res.get('items'): return None
         
-        item = items[0]
+        item = res['items'][0]
         snippet = item.get('snippet', {})
         stats = item.get('statistics', {})
         branding = item.get('brandingSettings', {})
-        content_details = item.get('contentDetails', {})
+        content = item.get('contentDetails', {})
         
         sub_count = int(stats.get('subscriberCount', 0))
         view_count = int(stats.get('viewCount', 0))
         video_count = int(stats.get('videoCount', 0))
         
-        # MONETİZASYON KONTROLÜ (CloudScraper ile)
-        is_monetized_bool = check_real_monetization(channel_id)
+        # --- MONETİZASYON KARAR ANI (TAHMİN YOK) ---
+        is_open = check_strict_monetization(channel_id)
         
-        if is_monetized_bool is True:
-            mon_status = "✅ AÇIK (Doğrulandı)"
-            mon_color = "#28a745"
-        elif is_monetized_bool is False:
-            mon_status = "❌ KAPALI (Doğrulandı)"
-            mon_color = "#dc3545"
+        if is_open is True:
+            mon_status = "✅ AÇIK"
+            mon_color = "#28a745" # Yeşil
+        elif is_open is False:
+            mon_status = "❌ KAPALI"
+            mon_color = "#dc3545" # Kırmızı
         else:
-            # Scraper da başarısız olursa (Çok nadir)
-            if sub_count >= 1000:
-                mon_status = "✅ AÇIK (Yüksek İhtimal)"
-                mon_color = "#28a745"
-            else:
-                mon_status = "❌ KAPALI"
-                mon_color = "#dc3545"
+            # Scraper hata verdiyse (None)
+            # ARTIK TAHMİN YAPMIYORUZ. Bilmiyorsak bilmiyoruzdur.
+            mon_status = "❓ TESPİT EDİLEMEDİ" 
+            mon_color = "#6c757d" # Gri
 
         # Son Videolar
-        uploads_id = content_details.get('relatedPlaylists', {}).get('uploads')
+        uploads_id = content.get('relatedPlaylists', {}).get('uploads')
         recent_videos = []
-        last_date = "Bilinmiyor"
+        last_date = "-"
         if uploads_id:
             try:
                 pl_req = youtube.playlistItems().list(part="snippet", playlistId=uploads_id, maxResults=5)
@@ -128,6 +113,7 @@ def get_channel_stats(channel_id):
         avg = view_count / video_count if video_count > 0 else 0
         min_e, max_e = calculate_earnings(view_count)
         
+        # Skor Hesaplama
         score = "C"
         if sub_count > 0:
             r = view_count / sub_count
@@ -159,23 +145,6 @@ def get_channel_stats(channel_id):
     except: return None
 
 # --- ROTALAR AYNI ---
-def get_trending_videos(region_code="TR", max_results=5):
-    try:
-        request = youtube.videos().list(part="snippet,statistics", chart="mostPopular", regionCode=region_code, maxResults=max_results)
-        response = request.execute()
-        data = []
-        for item in response.get("items", []):
-            data.append({
-                "title": item['snippet']['title'],
-                "channel": item['snippet']['channelTitle'],
-                "views": int(item['statistics'].get('viewCount', 0)),
-                "url": f"https://www.youtube.com/watch?v={item['id']}",
-                "thumbnail": item['snippet']['thumbnails']['medium']['url'],
-                "tags": item['snippet'].get('tags', [])
-            })
-        return pd.DataFrame(data)
-    except: return pd.DataFrame()
-
 @app.route('/')
 def home(): return send_from_directory(app.static_folder, 'index.html')
 @app.route('/sorgula')
@@ -194,14 +163,34 @@ def api_trending():
 def api_channel():
     q = request.args.get('query')
     if not q: return jsonify({"error": "Query required"}), 400
+    
     clean = q
     if "/channel/" in q: clean = q.split("/channel/")[1].split("/")[0]
     elif "/@" in q: clean = q.split("/@")[1].split("/")[0]
+    
     cid = resolve_channel_id(clean)
     if cid:
         stats = get_channel_stats(cid)
         if stats: return jsonify(stats)
     return jsonify({"error": "Kanal bulunamadı"}), 404
+
+# Trend fonksiyonu (Eksik olmasın diye ekledim)
+def get_trending_videos(region_code="TR", max_results=5):
+    try:
+        request = youtube.videos().list(part="snippet,statistics", chart="mostPopular", regionCode=region_code, maxResults=max_results)
+        response = request.execute()
+        data = []
+        for item in response.get("items", []):
+            data.append({
+                "title": item['snippet']['title'],
+                "channel": item['snippet']['channelTitle'],
+                "views": int(item['statistics'].get('viewCount', 0)),
+                "url": f"https://www.youtube.com/watch?v={item['id']}",
+                "thumbnail": item['snippet']['thumbnails']['medium']['url'],
+                "tags": item['snippet'].get('tags', [])
+            })
+        return pd.DataFrame(data)
+    except: return pd.DataFrame()
 
 if __name__ == '__main__':
     app.run(debug=True)
