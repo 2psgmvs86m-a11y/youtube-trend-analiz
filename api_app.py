@@ -3,7 +3,7 @@ from googleapiclient.discovery import build
 from datetime import datetime
 import os
 import pandas as pd
-import requests # HTML tarama için
+import requests
 
 app = Flask(__name__, static_folder='static')
 
@@ -13,17 +13,33 @@ if not API_KEY:
 
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 
-# --- ÖZEL: GERÇEK MONETİZASYON KONTROLÜ (SCRAPING) ---
+# --- DÜZELTİLEN KISIM: GERÇEK KONTROL ---
 def check_real_monetization(channel_id):
     url = f"https://www.youtube.com/channel/{channel_id}"
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124 Safari/537.36"}
+    
+    # YouTube'un "Çerezleri Kabul Et" duvarını aşmak için Cookie ekliyoruz
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9"
+    }
+    cookies = {
+        'CONSENT': 'YES+cb.20210328-17-p0.en+FX+417' 
+    }
+    
     try:
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, headers=headers, cookies=cookies, timeout=5)
         text = response.text
-        if '"key":"is_monetization_enabled","value":"true"' in text: return True
-        elif '"key":"is_monetization_enabled","value":"false"' in text: return False
+        
+        # Kesin kanıt arıyoruz
+        if '"key":"is_monetization_enabled","value":"true"' in text:
+            return True
+        elif '"key":"is_monetization_enabled","value":"false"' in text:
+            return False
+        else:
+            # Kod bulunamadıysa (YouTube yapıyı değiştirmiş olabilir)
+            return None 
+    except:
         return None
-    except: return None
 
 # --- YARDIMCI FONKSİYONLAR ---
 def resolve_channel_id(input_str):
@@ -36,7 +52,6 @@ def resolve_channel_id(input_str):
     return None
 
 def calculate_earnings(view_count):
-    # Ortalama CPM $0.25 - $4.00
     min_earnings = (view_count / 1000) * 0.25
     max_earnings = (view_count / 1000) * 4.00
     return min_earnings, max_earnings
@@ -59,8 +74,9 @@ def get_channel_stats(channel_id):
         view_count = int(stats.get('viewCount', 0))
         video_count = int(stats.get('videoCount', 0))
         
-        # 2. Gerçek Monetizasyon Kontrolü
+        # 2. MONETİZASYON MANTIĞI (GÜNCELLENDİ)
         is_monetized_bool = check_real_monetization(channel_id)
+        
         if is_monetized_bool is True:
             mon_status = "✅ AÇIK (Doğrulandı)"
             mon_color = "#28a745" # Yeşil
@@ -68,13 +84,14 @@ def get_channel_stats(channel_id):
             mon_status = "❌ KAPALI (Doğrulandı)"
             mon_color = "#dc3545" # Kırmızı
         else:
-            # YEDEK PLAN (Tahmin)
+            # EĞER KESİN KANIT BULAMAZSAK ARTIK TAHMİN YAPMIYORUZ!
+            # Kullanıcıyı kandırmamak için belirsiz olduğunu söylüyoruz.
+            mon_status = "❓ Bilinmiyor / Gizli"
+            mon_color = "#6c757d" # Gri
+            
+            # Not: Sadece abone sayısı kriterini geçip geçmediğini not düşebiliriz ama "Açık" demeyiz.
             if sub_count >= 1000:
-                mon_status = "⚠️ AÇIK Olabilir (Tahmin)"
-                mon_color = "#ffc107" # Sarı
-            else:
-                mon_status = "❌ KAPALI (Abone Yetersiz)"
-                mon_color = "#dc3545"
+                mon_status = "❓ Belirsiz (Abone Şartı Tamam)"
 
         # 3. Son Videolar
         uploads_id = content_details.get('relatedPlaylists', {}).get('uploads')
@@ -95,11 +112,9 @@ def get_channel_stats(channel_id):
                 if recent_videos: last_date = recent_videos[0]['publishedAt']
             except: pass
 
-        # Hesaplamalar
         avg = view_count / video_count if video_count > 0 else 0
         min_e, max_e = calculate_earnings(view_count)
         
-        # Skor
         score = "C"
         if sub_count > 0:
             r = view_count / sub_count
@@ -147,7 +162,6 @@ def get_trending_videos(region_code="TR", max_results=5):
         return pd.DataFrame(data)
     except: return pd.DataFrame()
 
-# --- ROTALAR ---
 @app.route('/')
 def home(): return send_from_directory(app.static_folder, 'index.html')
 @app.route('/sorgula')
