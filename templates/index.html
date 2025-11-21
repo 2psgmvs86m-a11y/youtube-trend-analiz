@@ -62,7 +62,7 @@
 
         .tag-badge { background: #21262d; color: #58a6ff; font-size: 0.8rem; padding: 5px 10px; border-radius: 6px; margin: 0 4px 4px 0; display: inline-block; border: 1px solid #30363d; }
 
-        /* Finance Box Renkleri (Dinamik) */
+        /* Finance Box Renkleri */
         .finance-active { background: linear-gradient(145deg, #064e3b 0%, #161b22 100%); border: 1px solid #10b981; }
         .finance-passive { background: linear-gradient(145deg, #450a0a 0%, #161b22 100%); border: 1px solid #ef4444; }
         
@@ -131,6 +131,45 @@
             </div>
         </div>
 
+        <div class="glass-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start mb-3 {{ 'finance-active' if result.monetized else 'finance-passive' }}">
+            <div class="mb-3 mb-md-0">
+                <div class="stat-label mb-1 text-white-50">{{ content.monetization }}</div>
+                <h4 class="fw-bold mb-0 {{ 'text-success' if result.monetized else 'text-danger' }}">
+                    <i class="fas {{ 'fa-check-circle' if result.monetized else 'fa-times-circle' }} me-2"></i>
+                    {{ content[result.status_key] }}
+                </h4>
+                {% if result.warning_text %}
+                    <small class="text-danger mt-1 d-block fw-bold"><i class="fas fa-exclamation-triangle me-1"></i> {{ result.warning_text }}</small>
+                {% endif %}
+            </div>
+            <div class="text-md-end">
+                <div class="stat-label mb-1 text-white-50">{{ content.earnings }}</div>
+                <h2 class="fw-bold text-white mb-0">{{ result.earnings }}</h2>
+                <small class="text-white-50 opacity-75" style="font-size: 0.7rem;">*Tahmini / Estimated</small>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-4">
+                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                    <div class="stat-num">{{ result.sub_count }}</div>
+                    <div class="stat-label">{{ content.subs }}</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                    <div class="stat-num">{{ result.view_count }}</div>
+                    <div class="stat-label">{{ content.views }}</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                    <div class="stat-num">{{ result.video_count }}</div>
+                    <div class="stat-label">{{ content.videos }}</div>
+                </div>
+            </div>
+        </div>
+
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <div class="glass-card p-3 d-flex align-items-center justify-content-between">
@@ -170,44 +209,7 @@
             </div>
         </div>
 
-        <div class="glass-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start mb-3 {{ 'finance-active' if result.monetized else 'finance-passive' }}">
-            <div class="mb-3 mb-md-0">
-                <div class="stat-label mb-1 text-white-50">{{ content.monetization }}</div>
-                <h4 class="fw-bold mb-0 {{ 'text-success' if result.monetized else 'text-danger' }}">
-                    <i class="fas {{ 'fa-check-circle' if result.monetized else 'fa-times-circle' }} me-2"></i>
-                    {{ content[result.status_key] }}
-                </h4>
-                {% if result.warning_text %}
-                    <small class="text-danger mt-1 d-block fw-bold"><i class="fas fa-exclamation-triangle me-1"></i> {{ result.warning_text }}</small>
-                {% endif %}
-            </div>
-            <div class="text-md-end">
-                <div class="stat-label mb-1 text-white-50">{{ content.earnings }}</div>
-                <h2 class="fw-bold text-white mb-0">{{ result.earnings }}</h2>
-                <small class="text-white-50 opacity-75" style="font-size: 0.7rem;">*Tahmini / Estimated</small>
-            </div>
-        </div>
-
         <div class="row g-3 mb-3">
-            <div class="col-4">
-                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
-                    <div class="stat-num">{{ result.sub_count }}</div>
-                    <div class="stat-label">{{ content.subs }}</div>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
-                    <div class="stat-num">{{ result.view_count }}</div>
-                    <div class="stat-label">{{ content.views }}</div>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
-                    <div class="stat-num">{{ result.video_count }}</div>
-                    <div class="stat-label">{{ content.videos }}</div>
-                </div>
-            </div>
-            
             <div class="col-md-6">
                 <div class="glass-card p-3 d-flex align-items-center">
                     <i class="fas fa-layer-group text-primary fa-2x me-3 opacity-75"></i>
