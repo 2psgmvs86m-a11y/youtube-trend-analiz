@@ -11,15 +11,28 @@
         :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
         body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         h1, h2, h3 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+        
+        /* DÜZELTME: GENEL OKUNABİLİRLİK */
+        .text-muted { color: #cbd5e1 !important; opacity: 1 !important; }
+        .form-label { color: #ffffff !important; } /* Label'lar beyaz olsun */
+
         .main-container { max-width: 800px; margin: 50px auto; padding: 30px; background: #161b22; border: 1px solid #30363d; border-radius: 12px; flex: 1;}
-        .form-control, .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
+        
+        /* FORM ALANLARI */
+        .form-control, .form-select { 
+            background-color: #0d1117; 
+            color: white; 
+            border: 1px solid #30363d; 
+        }
         .form-control:focus, .form-select:focus { box-shadow: none; border-color: var(--accent); }
+        
         .btn-generate { background: var(--accent); border: none; color: white; font-weight: 700; padding: 10px 20px; }
         .result-box { background: #0d1117; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-top: 30px; }
-        .title-item { background: #21262d; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-weight: 600; }
+        .title-item { background: #21262d; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-weight: 600; color: #f1f1f1; } /* BAŞLIK RENGİ */
         .back-link { color: #8b949e; text-decoration: none; display: block; margin-bottom: 20px; }
         .error-message { color: #e62429; padding: 15px; border: 1px solid #e62429; border-radius: 8px; margin-top: 20px; }
         .result-heading { color: #10b981; }
+        
         footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
         .footer-link { color: #8b949e; margin: 0 10px; font-size: 0.9rem; transition: color 0.3s; }
         .footer-link:hover { color: var(--accent); }
@@ -36,11 +49,11 @@
         
         <form method="POST">
             <div class="mb-3">
-                <label for="topic" class="form-label text-white">Video Konusu (Örn: YouTube SEO ipuçları)</label>
+                <label for="topic" class="form-label">Video Konusu (Örn: YouTube SEO ipuçları)</label>
                 <input type="text" class="form-control" id="topic" name="topic" required value="{{ input_data.topic or '' }}">
             </div>
             <div class="mb-3">
-                <label for="style" class="form-label text-white">Başlık Stili</label>
+                <label for="style" class="form-label">Başlık Stili</label>
                 <select class="form-select" id="style" name="style">
                     <option value="Viral ve Merak Uyandıran" {% if input_data.style == 'Viral ve Merak Uyandıran' %}selected{% endif %}>Viral ve Merak Uyandıran</option>
                     <option value="Eğitici ve Bilgilendirici" {% if input_data.style == 'Eğitici ve Bilgilendirici' %}selected{% endif %}>Eğitici ve Bilgilendirici</option>
@@ -50,21 +63,27 @@
             </div>
             
             <button type="submit" class="btn btn-generate w-100">BAŞLIK OLUŞTUR</button>
+
             <p class="text-muted small text-center mt-3">Bu araç, harici bir API kullanmadan kendi sunucunuzda çalışır.</p>
         </form>
         
         {% if ai_result %}
             <div class="result-box">
-                <h3 class="result-heading">Başlık Önerileri</h3>
-                {% for title in ai_result.titles %}
-                    <div class="title-item">{{ title }}</div>
-                {% endfor %}
+                {% if ai_result.error %}
+                    <div class="error-message"><i class="fas fa-exclamation-triangle me-2"></i> **Hata:** {{ ai_result.error }}</div>
+                    <p class="text-muted small mt-2">Lokal Yapay Zeka motorunda bir sorun oluştu.</p>
+                {% else %}
+                    <h3 class="result-heading">Başlık Önerileri</h3>
+                    {% for title in ai_result.titles %}
+                        <div class="title-item">{{ title }}</div>
+                    {% endfor %}
 
-                <h3 class="result-heading mt-4">Profesyonel Açıklama</h3>
-                <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem; color: #e2e8f0;">{{ ai_result.description }}</pre>
+                    <h3 class="result-heading mt-4">Profesyonel Açıklama</h3>
+                    <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem; color: #e2e8f0;">{{ ai_result.description }}</pre>
 
-                <h3 class="result-heading mt-4 small">Motor Bilgisi</h3>
-                <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.8rem; color: #8b949e;">{{ ai_result.raw }}</pre>
+                    <h3 class="result-heading mt-4 small">Motor Bilgisi</h3>
+                    <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.8rem; color: #8b949e;">{{ ai_result.raw }}</pre>
+                {% endif %}
             </div>
         {% endif %}
     </div>
@@ -78,4 +97,3 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
