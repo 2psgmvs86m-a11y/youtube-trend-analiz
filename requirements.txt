@@ -4,3 +4,4 @@ pandas
 gunicorn
 requests
 cloudscraper
+google-auth
