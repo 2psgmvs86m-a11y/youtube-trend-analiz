@@ -7,69 +7,40 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        /* --- TEMEL RENK AYARLARI --- */
-        :root { 
-            --dark-bg: #0b0e11; 
-            --card-bg: #161b22; 
-            --accent: #e62429; 
-            --text-main: #ffffff;
-            --text-sub: #94a3b8;
-        }
-        
-        body { 
-            background-color: var(--dark-bg); 
-            color: var(--text-main); 
-            font-family: 'Inter', sans-serif; 
-        }
-
+        :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
+        body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
-        p, span, div { color: #e2e8f0; } 
         
-        .text-muted, .text-white-50 { color: #cbd5e1 !important; opacity: 0.8; }
-
+        /* Menü Ayarları */
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
-        .hero { padding: 40px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); }
+        .nav-link { color: #e2e8f0 !important; font-weight: 500; transition: color 0.3s; }
+        .nav-link:hover { color: var(--accent) !important; }
         
-        .search-input { 
-            background: #0d1117 !important; 
-            border: 1px solid #30363d; 
-            color: #ffffff !important; 
-            padding: 15px; 
-            border-radius: 8px 0 0 8px; 
-        }
-        .search-input::placeholder { color: #8b949e !important; opacity: 1; }
-        .form-control:focus { box-shadow: none; border-color: var(--accent); }
-        
-        .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 0 20px; border-radius: 0 8px 8px 0; white-space: nowrap; }
+        .hero { padding: 60px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); flex: 1;}
+        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: #ffffff !important; padding: 15px; border-radius: 8px 0 0 8px; }
+        .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 0 20px; border-radius: 0 8px 8px 0; }
         .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
-
-        /* Cards */
         .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 20px; height: 100%; }
         .channel-banner { height: 120px; width: 100%; object-fit: cover; border-radius: 12px 12px 0 0; opacity: 0.6; }
-        
         .profile-header { margin-top: -50px; position: relative; z-index: 2; text-align: center; }
         .avatar-overlay { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--card-bg); background: #000; }
-        
-        /* Grade Badge */
-        .grade-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #30363d; }
-        .grade-box { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 2rem; font-weight: 800; color: white; flex-shrink: 0; }
+        .grade-box { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 2rem; font-weight: 800; color: white; }
         .grade-A, .grade-A_plus { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
         .grade-B, .grade-B_plus { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .grade-C { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .grade-D { background: linear-gradient(135deg, #ef4444, #dc2626); }
-
         .tag-badge { background: #21262d; color: #58a6ff; font-size: 0.8rem; padding: 5px 10px; border-radius: 6px; margin: 0 4px 4px 0; display: inline-block; border: 1px solid #30363d; }
-
-        /* Finance Box Renkleri */
         .finance-active { background: linear-gradient(145deg, #064e3b 0%, #161b22 100%); border: 1px solid #10b981; }
         .finance-passive { background: linear-gradient(145deg, #450a0a 0%, #161b22 100%); border: 1px solid #ef4444; }
-        
         .stat-num { font-size: 1.5rem; font-weight: 700; font-family: 'Rajdhani'; color: #ffffff; }
         .stat-label { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        
         a { color: inherit; text-decoration: none; }
+
+        /* Footer */
+        footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
+        .footer-link { color: #8b949e; margin: 0 10px; font-size: 0.9rem; transition: color 0.3s; }
+        .footer-link:hover { color: var(--accent); }
     </style>
 </head>
 <body>
@@ -77,8 +48,23 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand fw-bold text-white" href="/"><i class="fas fa-chart-pie text-danger"></i> YT<span class="text-white">AUDIT</span></a>
-            <div class="ms-auto">
-                <select class="form-select form-select-sm shadow-none" onchange="location = '?lang=' + this.value;">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Ana Sayfa</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/hakkimizda">Hakkımızda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/iletisim">İletişim</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Araçlar</a>
+                        <ul class="dropdown-menu dropdown-menu-dark" style="background: #161b22;">
+                            <li><a class="dropdown-item" href="#">Thumbnail İndir (Yakında)</a></li>
+                            <li><a class="dropdown-item" href="#">Tag Bulucu (Yakında)</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <select class="form-select form-select-sm shadow-none ms-3" style="width: auto;" onchange="location = '?lang=' + this.value;">
                     <option value="tr" {% if current_lang == 'tr' %}selected{% endif %}>TR</option>
                     <option value="en" {% if current_lang == 'en' %}selected{% endif %}>EN</option>
                     <option value="de" {% if current_lang == 'de' %}selected{% endif %}>DE</option>
@@ -100,164 +86,192 @@
             </div>
             {% if error %} <div class="alert alert-danger mt-4 d-inline-block py-2 px-4 small border-0">{{ error }}</div> {% endif %}
         </div>
-    </div>
 
-    {% if result %}
-    <div class="container pb-5" style="margin-top: -20px;">
-        
-        <div class="glass-card p-0 mb-3">
-            {% if result.banner %}
-            <img src="{{ result.banner }}" class="channel-banner">
-            {% else %}
-            <div class="channel-banner" style="background: #21262d;"></div>
-            {% endif %}
+        {% if result %}
+        <div class="container pb-5 mt-5">
             
-            <div class="px-3 pb-3">
-                <div class="profile-header">
-                    <img src="{{ result.avatar }}" class="avatar-overlay shadow">
-                    <h3 class="mt-2 mb-1 fw-bold text-white">{{ result.title }}</h3>
-                    <p class="text-muted mb-0 small">{{ result.desc }}</p>
-                </div>
-
-                <div class="grade-container">
-                    <div class="grade-box grade-{{ result.grade | replace('+','_plus') }}">
-                        {{ result.grade }}
-                    </div>
-                    <div class="text-start">
-                        <h6 class="mb-0 text-white fw-bold">{{ content.grade }}</h6>
-                        <small class="text-muted" style="font-size: 0.8rem;">Performance Score</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="glass-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start mb-3 {{ 'finance-active' if result.monetized else 'finance-passive' }}">
-            <div class="mb-3 mb-md-0">
-                <div class="stat-label mb-1 text-white-50">{{ content.monetization }}</div>
-                <h4 class="fw-bold mb-0 {{ 'text-success' if result.monetized else 'text-danger' }}">
-                    <i class="fas {{ 'fa-check-circle' if result.monetized else 'fa-times-circle' }} me-2"></i>
-                    {{ content[result.status_key] }}
-                </h4>
-                {% if result.warning_text %}
-                    <small class="text-danger mt-1 d-block fw-bold"><i class="fas fa-exclamation-triangle me-1"></i> {{ result.warning_text }}</small>
+            <div class="glass-card p-0 mb-3">
+                {% if result.banner %}
+                <img src="{{ result.banner }}" class="channel-banner">
+                {% else %}
+                <div class="channel-banner" style="background: #21262d;"></div>
                 {% endif %}
-            </div>
-            <div class="text-md-end">
-                <div class="stat-label mb-1 text-white-50">{{ content.earnings }}</div>
-                <h2 class="fw-bold text-white mb-0">{{ result.earnings }}</h2>
-                <small class="text-white-50 opacity-75" style="font-size: 0.7rem;">*Tahmini / Estimated</small>
-            </div>
-        </div>
-
-        <div class="row g-3 mb-3">
-            <div class="col-4">
-                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
-                    <div class="stat-num">{{ result.sub_count }}</div>
-                    <div class="stat-label">{{ content.subs }}</div>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
-                    <div class="stat-num">{{ result.view_count }}</div>
-                    <div class="stat-label">{{ content.views }}</div>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
-                    <div class="stat-num">{{ result.video_count }}</div>
-                    <div class="stat-label">{{ content.videos }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-3 mb-3">
-            <div class="col-md-4">
-                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
-                    <div>
-                        <div class="stat-label">{{ content.country }}</div>
-                        <h5 class="mb-0 fw-bold text-white">
-                            {% if result.country %}
-                            <img src="https://flagcdn.com/24x18/{{ result.country | lower }}.png" class="me-2" style="border-radius: 2px;">
-                            {{ result.country }}
-                            {% else %}
-                            TR
-                            {% endif %}
-                        </h5>
+                <div class="px-3 pb-3">
+                    <div class="profile-header">
+                        <img src="{{ result.avatar }}" class="avatar-overlay shadow">
+                        <h3 class="mt-2 mb-1 fw-bold text-white">{{ result.title }}</h3>
+                        <p class="text-muted mb-0 small">{{ result.desc }}</p>
                     </div>
-                    <i class="fas fa-globe text-primary opacity-50 fa-2x"></i>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
-                    <div>
-                        <div class="stat-label">{{ content.age }}</div>
-                        <h5 class="mb-0 fw-bold text-white">{{ result.age }}</h5>
-                    </div>
-                    <i class="fas fa-birthday-cake text-warning opacity-50 fa-2x"></i>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="glass-card p-3 d-flex align-items-center justify-content-between">
-                    <div>
-                        <div class="stat-label">{{ content.growth }}</div>
-                        <h5 class="mb-0 fw-bold text-success">
-                            +{{ result.daily_subs }} <small class="text-white-50" style="font-size: 0.7rem">{{ content.daily_sub }}</small>
-                        </h5>
-                    </div>
-                    <i class="fas fa-chart-line text-success opacity-50 fa-2x"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-3 mb-3">
-            <div class="col-md-6">
-                <div class="glass-card p-3 d-flex align-items-center">
-                    <i class="fas fa-layer-group text-primary fa-2x me-3 opacity-75"></i>
-                    <div>
-                        <div class="stat-label">{{ content.category }}</div>
-                        <h5 class="fw-bold mb-0 text-white">{{ result.niche }}</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="glass-card p-3 d-flex align-items-center">
-                    <i class="far fa-clock text-warning fa-2x me-3 opacity-75"></i>
-                    <div>
-                        <div class="stat-label">{{ content.upload_schedule }}</div>
-                        <h5 class="fw-bold mb-0 text-white">{{ result.upload_schedule }}</h5>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {% if result.tags %}
-        <div class="glass-card p-3 mb-4">
-            <h6 class="mb-2 text-white fw-bold small">{{ content.tags }}</h6>
-            {% for tag in result.tags %}
-                <span class="tag-badge">#{{ tag }}</span>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <h5 class="mb-3 fw-bold border-start border-4 border-danger ps-3 text-white">{{ content.latest }}</h5>
-        <div class="row g-3">
-            {% for video in result.videos %}
-            <div class="col-md-4">
-                <a href="https://www.youtube.com/watch?v={{ video.id }}" target="_blank" class="text-decoration-none">
-                    <div class="glass-card p-0 overflow-hidden h-100 border-0 shadow-sm bg-dark">
-                        <img src="{{ video.thumb }}" class="w-100" style="height: 160px; object-fit: cover; opacity: 0.9;">
-                        <div class="p-3">
-                            <h6 class="text-white mb-1 text-truncate" style="font-size: 0.9rem;">{{ video.title }}</h6>
-                            <small class="text-muted"><i class="far fa-calendar me-1"></i> {{ video.published }}</small>
+                    <div class="d-flex justify-content-center align-items-center gap-3 mt-3" style="border-top: 1px solid #30363d; padding-top: 15px;">
+                        <div class="grade-box grade-{{ result.grade | replace('+','_plus') }}">{{ result.grade }}</div>
+                        <div class="text-start">
+                            <h6 class="mb-0 text-white fw-bold">{{ content.grade }}</h6>
+                            <small class="text-muted" style="font-size: 0.8rem;">Performance Score</small>
                         </div>
                     </div>
-                </a>
+                </div>
             </div>
-            {% endfor %}
+
+            <div class="glass-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start mb-3 {{ 'finance-active' if result.monetized else 'finance-passive' }}">
+                <div class="mb-3 mb-md-0">
+                    <div class="stat-label mb-1 text-white-50">{{ content.monetization }}</div>
+                    <h4 class="fw-bold mb-0 {{ 'text-success' if result.monetized else 'text-danger' }}">
+                        <i class="fas {{ 'fa-check-circle' if result.monetized else 'fa-times-circle' }} me-2"></i>
+                        {{ content[result.status_key] }}
+                    </h4>
+                    {% if result.warning_text %}
+                        <small class="text-danger mt-1 d-block fw-bold"><i class="fas fa-exclamation-triangle me-1"></i> {{ result.warning_text }}</small>
+                    {% endif %}
+                </div>
+                <div class="text-md-end">
+                    <div class="stat-label mb-1 text-white-50">{{ content.earnings }}</div>
+                    <h2 class="fw-bold text-white mb-0">{{ result.earnings }}</h2>
+                    <small class="text-white-50 opacity-75" style="font-size: 0.7rem;">*Tahmini / Estimated</small>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-4">
+                    <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                        <div class="stat-num">{{ result.sub_count }}</div>
+                        <div class="stat-label">{{ content.subs }}</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                        <div class="stat-num">{{ result.view_count }}</div>
+                        <div class="stat-label">{{ content.views }}</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
+                        <div class="stat-num">{{ result.video_count }}</div>
+                        <div class="stat-label">{{ content.videos }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label">{{ content.country }}</div>
+                            <h5 class="mb-0 fw-bold text-white">
+                                {% if result.country %}
+                                <img src="https://flagcdn.com/24x18/{{ result.country | lower }}.png" class="me-2" style="border-radius: 2px;">
+                                {{ result.country }}
+                                {% else %}TR{% endif %}
+                            </h5>
+                        </div>
+                        <i class="fas fa-globe text-primary opacity-50 fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label">{{ content.age }}</div>
+                            <h5 class="mb-0 fw-bold text-white">{{ result.age }}</h5>
+                        </div>
+                        <i class="fas fa-birthday-cake text-warning opacity-50 fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label">{{ content.growth }}</div>
+                            <h5 class="mb-0 fw-bold text-success">+{{ result.daily_subs }} <small class="text-white-50" style="font-size: 0.7rem">{{ content.daily_sub }}</small></h5>
+                        </div>
+                        <i class="fas fa-chart-line text-success opacity-50 fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label">{{ content.hidden_content }}</div>
+                            <h5 class="mb-0 fw-bold {{ 'text-danger' if result.hidden_videos > 0 else 'text-success' }}">
+                                {{ result.hidden_videos }} <small class="text-white-50" style="font-size: 0.7rem">Video</small>
+                            </h5>
+                        </div>
+                        <i class="fas fa-user-secret opacity-50 fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label">{{ content.consistency }}</div>
+                            <h5 class="mb-0 fw-bold text-white">{{ result.consistency.label }}</h5>
+                        </div>
+                        <i class="fas fa-balance-scale opacity-50 fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="glass-card p-3 d-flex align-items-center">
+                        <i class="fas fa-layer-group text-primary fa-2x me-3 opacity-75"></i>
+                        <div>
+                            <div class="stat-label">{{ content.category }}</div>
+                            <h5 class="fw-bold mb-0 text-white">{{ result.niche }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="glass-card p-3 d-flex align-items-center">
+                        <i class="far fa-clock text-warning fa-2x me-3 opacity-75"></i>
+                        <div>
+                            <div class="stat-label">{{ content.upload_schedule }}</div>
+                            <h5 class="fw-bold mb-0 text-white">{{ result.upload_schedule }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if result.tags %}
+            <div class="glass-card p-3 mb-4">
+                <h6 class="mb-2 text-white fw-bold small">{{ content.tags }}</h6>
+                {% for tag in result.tags %}
+                    <span class="tag-badge">#{{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <h5 class="mb-3 fw-bold border-start border-4 border-danger ps-3 text-white">{{ content.latest }}</h5>
+            <div class="row g-3">
+                {% for video in result.videos %}
+                <div class="col-md-4">
+                    <a href="https://www.youtube.com/watch?v={{ video.id }}" target="_blank" class="text-decoration-none">
+                        <div class="glass-card p-0 overflow-hidden h-100 border-0 shadow-sm bg-dark">
+                            <img src="{{ video.thumb }}" class="w-100" style="height: 160px; object-fit: cover; opacity: 0.9;">
+                            <div class="p-3">
+                                <h6 class="text-white mb-1 text-truncate" style="font-size: 0.9rem;">{{ video.title }}</h6>
+                                <small class="text-muted"><i class="far fa-calendar me-1"></i> {{ video.published }}</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
         </div>
-
+        {% endif %}
     </div>
-    {% endif %}
 
+    <footer>
+        <div class="container text-center">
+            <div class="footer-links mb-3">
+                <a href="/gizlilik" class="footer-link">Gizlilik Politikası</a>
+                <a href="/kullanim" class="footer-link">Kullanım Şartları</a>
+                <a href="/hakkimizda" class="footer-link">Hakkımızda</a>
+                <a href="/iletisim" class="footer-link">İletişim</a>
+            </div>
+            <p class="text-muted small mb-0">&copy; 2025 YT Audit. Veriler YouTube API tarafından sağlanmaktadır.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
