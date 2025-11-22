@@ -8,22 +8,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ANA SAYFA İLE AYNI TEMEL CSS */
+        /* TÜM ANASAYFA CSS'İ BURAYA KOPYALANDI */
         :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
         body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
         p, span, div, li { color: #e2e8f0; }
         .text-muted { color: #94a3b8 !important; opacity: 0.8 !important; }
-        
-        /* NAVBAR VE TEMA STİLİ */
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
         .nav-link { color: #e2e8f0 !important; font-weight: 500; transition: color 0.3s; }
         .nav-link:hover { color: var(--accent) !important; }
         
         .main-content-area { 
-            max-width: 700px; /* Merkeze çekmek için */
+            max-width: 700px; 
             margin: 50px auto; 
-            /* ANASAYFADAKİ GLASS-CARD STİLİ */
             background: var(--card-bg); 
             border: 1px solid #30363d; 
             border-radius: 12px; 
@@ -32,10 +29,11 @@
             flex: 1;
         }
 
-        /* FORM ALANLARI ANA SAYFA GİBİ */
+        /* FORM ALANLARI ANA SAYFA İLE AYNI GÖRÜNMELİ */
         .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 6px; }
         .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
-        
+        .form-label { color: #ffffff !important; } /* Label'ları görünür yap */
+
         /* BUTON ANASAYFA İLE AYNI */
         .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 12px 20px; border-radius: 6px; transition: background-color 0.3s; }
         .btn-audit:hover { background: #d41e23; }
@@ -57,7 +55,7 @@
 </head>
 <body>
 
-    <!-- NAVBAR (TEMA TUTARLILIĞI İÇİN) -->
+    <!-- NAVBAR (ANASAYFADAKİ GİBİ) -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand fw-bold text-white" href="/"><i class="fas fa-chart-pie text-danger"></i> YT<span class="text-white">AUDIT</span></a>
