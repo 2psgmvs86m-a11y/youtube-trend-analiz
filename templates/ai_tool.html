@@ -11,25 +11,25 @@
         :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
         body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
-        p, span, div, li { color: #e2e8f0; }
         .text-muted { color: #94a3b8 !important; opacity: 0.8 !important; }
+
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
         .nav-link { color: #e2e8f0 !important; font-weight: 500; transition: color 0.3s; }
         .nav-link:hover { color: var(--accent) !important; }
-        .hero { padding: 60px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); flex: 1;}
-        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: #ffffff !important; padding: 10px; border-radius: 6px; }
-        .search-input::placeholder { color: #cbd5e1 !important; opacity: 0.7; }
+        
+        .main-container { max-width: 800px; margin: 50px auto; padding: 30px; background: #161b22; border: 1px solid #30363d; border-radius: 12px; flex: 1;}
+        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 6px; }
+        .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
+        
         .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 12px 20px; border-radius: 6px; transition: background-color 0.3s; }
         .btn-audit:hover { background: #d41e23; }
-        .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
-        .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 30px; height: 100%; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
 
         .usage-info { text-align: center; margin-bottom: 25px; padding: 15px; background-color: #21262d; border-radius: 8px; font-size: 1rem; border: 1px solid #30363d;}
         .error-box { background-color: #3b1e1e; color: #f85149; padding: 15px; border-radius: 6px; margin-top: 20px; border: 1px solid #f85149; }
         .result-box { background: #0d1117; border: 1px solid #10b981; padding: 20px; border-radius: 8px; margin-top: 30px; }
         .result-box h3 { color: #10b981; font-size: 1.5rem; }
         .title-item { background: #21262d; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-weight: 600; color: #f1f1f1; border-left: 3px solid #e62429; }
-        .result-box pre { white-space: pre-wrap; word-wrap: break-word; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #e2e8f0; padding: 10px; border-radius: 4px; border: 1px solid #30363d; }
+        .back-link { color: #8b949e; text-decoration: none; display: block; margin-bottom: 20px; }
 
         footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
         .footer-link { color: #8b949e; margin: 0 10px; font-size: 0.9rem; transition: color 0.3s; }
@@ -53,6 +53,8 @@
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Araçlar</a>
                         <ul class="dropdown-menu dropdown-menu-dark" style="background: #161b22;">
                             <li><a class="dropdown-item" href="/araclar/ai-baslik">AI Başlık Oluşturucu</a></li> 
+                            <li><a class="dropdown-item" href="/araclar/kanal-karsilastir">Kanal Kıyaslama</a></li>
+                            <li><a class="dropdown-item" href="/araclar/video-seo">Video SEO Skoru</a></li>
                             <li><a class="dropdown-item" href="#">Thumbnail İndir (Yakında)</a></li>
                             <li><a class="dropdown-item" href="#">Tag Bulucu (Yakında)</a></li>
                         </ul>
@@ -67,67 +69,66 @@
         </div>
     </nav>
 
-    <div class="hero">
-        <div class="container">
-            <h1 class="text-center display-6 fw-bold mb-4 text-white">Yapay Zeka Başlık ve Açıklama Üretici</h1>
+    <div class="container">
+        <div class="main-container">
+            <a href="/" class="back-link">&larr; Ana Sayfaya Dön</a>
 
-            <div class="glass-card mx-auto" style="max-width: 500px;">
-                
-                <div class="usage-info">
-                    Kalan Hakkınız: <strong class="text-warning">{{ uses_left }} / {{ max_uses }}</strong>
-                    <br><small class="text-muted">Günlük 5 kullanım hakkınız bulunmaktadır. (Çerez bazlı)</small>
-                </div>
-
-                {% if error %}
-                    <div class="alert alert-danger error-box" role="alert">
-                        <strong>Hata:</strong> {{ error }}
-                    </div>
-                {% endif %}
-
-                {% if uses_left <= 0 and not ai_result %}
-                    <div class="alert alert-info text-center" style="background-color: #21262d; border-color: #58a6ff; color: #58a6ff;">
-                        <strong>Limit Doldu:</strong> Günlük kullanım limitinizi doldurdunuz.
-                    </div>
-                {% else %}
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="topic" class="form-label text-white">Video Konusu</label>
-                            <input type="text" id="topic" name="topic" class="form-control search-input" value="{{ input_data.topic or '' }}" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="style" class="form-label text-white">Başlık Stili</label>
-                            <select id="style" name="style" class="form-select search-input" required>
-                                <option value="Sıradan ve Bilgilendirici" {% if input_data.style == 'Sıradan ve Bilgilendirici' %}selected{% endif %}>Sıradan ve Bilgilendirici</option>
-                                <option value="Şok Edici ve Duygusal" {% if input_data.style == 'Şok Edici ve Duygusal' %}selected{% endif %}>Şok Edici ve Duygusal</option>
-                                <option value="Soru Soran ve Merak Uyandıran" {% if input_data.style == 'Soru Soran ve Merak Uyandıran' %}selected{% endif %}>Soru Soran ve Merak Uyandıran</option>
-                                <option value="Eğitici ve Rehber" {% if input_data.style == 'Eğitici ve Rehber' %}selected{% endif %}>Eğitici ve Rehber</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="captcha" class="form-label text-white">CAPTCHA Doğrulaması: Lütfen sonucu girin ({{ captcha_question }})</label>
-                            <input type="text" id="captcha" name="captcha_check" class="form-control search-input" required>
-                        </div>
-
-                        <button type="submit" class="btn btn-audit w-100">İÇERİK OLUŞTUR</button>
-                    </form>
-                {% endif %}
-
-                {% if ai_result and 'error' not in ai_result %}
-                    <div class="result-box">
-                        <h3 class="mb-3">Üretilen Başlıklar (SEO Uyumlu)</h3>
-                        <ul class="list-unstyled">
-                            {% for title in ai_result.titles %}
-                                <li class="title-item mb-2">{{ title | safe }}</li>
-                            {% endfor %}
-                        </ul>
-
-                        <h3 class="mt-4 mb-3">Kısa Açıklama Metni</h3>
-                        <pre>{{ ai_result.description }}</pre>
-                    </div>
-                {% endif %}
+            <h1 class="mb-4 text-center">AI Başlık ve Açıklama Üretici</h1>
+            <p class="text-muted text-center mb-4">Groq Llama 3.1 tarafından desteklenir. Yaratıcı ve SEO uyumlu içerik oluşturun.</p>
+            
+            <div class="usage-info">
+                Kalan Hakkınız: <strong class="text-warning">{{ uses_left }} / {{ max_uses }}</strong>
             </div>
+
+            {% if error %}
+                <div class="alert alert-danger error-box" role="alert">
+                    <strong>Hata:</strong> {{ error }}
+                </div>
+            {% endif %}
+
+            {% if uses_left <= 0 and not ai_result %}
+                 <div class="alert alert-info text-center" style="background-color: #21262d; border-color: #58a6ff; color: #58a6ff;">
+                    <strong>Limit Doldu:</strong> Günlük kullanım limitinizi doldurdunuz.
+                </div>
+            {% else %}
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="topic" class="form-label text-white">Video Konusu</label>
+                        <input type="text" id="topic" name="topic" class="form-control search-input" value="{{ input_data.topic or '' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="style" class="form-label text-white">Başlık Stili</label>
+                        <select id="style" name="style" class="form-select search-input" required>
+                            <option value="Sıradan ve Bilgilendirici" {% if input_data.style == 'Sıradan ve Bilgilendirici' %}selected{% endif %}>Sıradan ve Bilgilendirici</option>
+                            <option value="Şok Edici ve Duygusal" {% if input_data.style == 'Şok Edici ve Duygusal' %}selected{% endif %}>Şok Edici ve Duygusal</option>
+                            <option value="Soru Soran ve Merak Uyandıran" {% if input_data.style == 'Soru Soran ve Merak Uyandıran' %}selected{% endif %}>Soru Soran ve Merak Uyandıran</option>
+                            <option value="Eğitici ve Rehber" {% if input_data.style == 'Eğitici ve Rehber' %}selected{% endif %}>Eğitici ve Rehber</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="captcha" class="form-label text-white">CAPTCHA Doğrulaması: Lütfen sonucu girin ({{ captcha_question }})</label>
+                        <input type="text" id="captcha" name="captcha_check" class="form-control search-input" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-audit w-100">İÇERİK OLUŞTUR</button>
+                </form>
+            {% endif %}
+
+            {% if ai_result and 'error' not in ai_result %}
+                <div class="result-box mt-4">
+                    <h3>Üretilen Başlıklar (SEO Uyumlu)</h3>
+                    <ul class="list-unstyled">
+                        {% for title in ai_result.titles %}
+                            <li class="title-item">{{ title | safe }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h3 class="mt-4 mb-3">Kısa Açıklama Metni (~50 Kelime)</h3>
+                    <pre>{{ ai_result.description }}</pre>
+                </div>
+            {% endif %}
         </div>
     </div>
 
