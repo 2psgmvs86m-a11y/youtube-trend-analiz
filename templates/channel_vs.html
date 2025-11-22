@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Kanal Kıyaslama Aracı</title>
+    <title>Kanal Kıyaslama Aracı - YT Audit</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,35 +11,32 @@
         :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
         body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+        p, span, div, li { color: #e2e8f0; }
         .text-muted { color: #94a3b8 !important; opacity: 0.8 !important; }
-
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
         .nav-link { color: #e2e8f0 !important; font-weight: 500; transition: color 0.3s; }
         .nav-link:hover { color: var(--accent) !important; }
-        
-        .main-container { max-width: 900px; margin: 50px auto; padding: 30px; background: #161b22; border: 1px solid #30363d; border-radius: 12px; flex: 1;}
-        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 6px; }
-        .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
-        
+        .hero { padding: 60px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); flex: 1;}
+        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: #ffffff !important; padding: 10px; border-radius: 6px; }
+        .search-input::placeholder { color: #cbd5e1 !important; opacity: 0.7; }
         .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 12px 20px; border-radius: 6px; transition: background-color 0.3s; }
         .btn-audit:hover { background: #d41e23; }
+        .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
+        .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 30px; height: 100%; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
 
-        .back-link { color: #8b949e; text-decoration: none; display: block; margin-bottom: 20px; }
+        .error-box { background-color: #3b1e1e; color: #f85149; padding: 15px; border-radius: 6px; margin-top: 20px; border: 1px solid #f85149; }
+        .comparison-table { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; }
+        .table-header { background-color: #21262d; font-weight: 700; color: white; padding: 15px; border-bottom: 1px solid #30363d; }
+        .table-row { display: flex; border-bottom: 1px solid #161b22; }
+        .metric-cell { padding: 12px 15px; flex-basis: 33.333%; text-align: left; background-color: #161b22; }
+        .value-cell { padding: 12px 15px; flex-basis: 33.333%; text-align: center; font-weight: 600; }
+        .metric-cell i { color: var(--accent); margin-right: 8px; }
 
-        /* Kıyaslama Tablosu Stilleri */
-        .comparison-table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border-radius: 8px; border: 1px solid #30363d; }
-        .comparison-table th, .comparison-table td { padding: 15px; text-align: center; border-bottom: 1px solid #30363d; }
-        .comparison-table th { background-color: #0d1117; color: #ffffff; font-weight: 600; text-transform: uppercase; }
-        .comparison-table tbody tr:last-child td { border-bottom: none; }
-        
-        .metric-label { text-align: left; background-color: #0d1117; font-weight: 600; color: #e2e8f0; }
+        .vs-divider { display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: var(--accent); }
+        .channel-card { border: 1px solid #30363d; padding: 20px; border-radius: 8px; text-align: center; height: 100%; }
+        .channel-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid #e62429; }
 
-        /* DİNAMİK RENKLENDİRME SINIFLARI */
-        .better-metric { background-color: #064e3b !important; color: #10b981 !important; font-weight: 700; } /* Üstün (Yeşil) */
-        .worse-metric { background-color: #450a0a !important; color: #ef4444 !important; font-weight: 700; } /* Düşük (Kırmızı) */
-        .neutral-metric { background-color: #21262d !important; color: #e2e8f0 !important; font-weight: 700; } /* Berabere (Gri/Nötr) */
-        
-        .channel-info { font-size: 1.1rem; font-weight: 700; }
+        .winner { background-color: #1f3b30 !important; color: #48c9b0 !important; font-weight: 700;}
 
         footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
         .footer-link { color: #8b949e; margin: 0 10px; font-size: 0.9rem; transition: color 0.3s; }
@@ -79,91 +76,85 @@
         </div>
     </nav>
 
+    <div class="hero">
+        <div class="container">
+            <h1 class="text-center display-6 fw-bold mb-4 text-white">YouTube Kanal Kıyaslama (VS) Aracı</h1>
+            <p class="text-center text-muted mb-5">İki farklı YouTube kanalını Abone, Görüntülenme ve Kalite Notu gibi temel metriklerle anında karşılaştırın.</p>
 
-    <div class="container">
-        <div class="main-container">
-            <a href="/" class="back-link">&larr; Ana Sayfaya Dön</a>
-
-            <h1 class="mb-4 text-center">KANAL KIYASLAMA ARACI</h1>
-            <p class="text-muted text-center mb-5">İki YouTube kanalını temel metrikler bazında anlık olarak karşılaştırın. Yeşil kutular daha üstün performansı gösterir.</p>
-
-            <form method="POST" class="row g-3 mb-5">
+            <form method="POST" class="row g-3 justify-content-center mb-5">
                 <div class="col-md-5">
-                    <input type="text" name="query1" class="form-control search-input" placeholder="Kanal 1 Linki/ID" value="{{ input_data.query1 or '' }}" required>
+                    <input type="text" name="query1" class="form-control search-input" placeholder="1. Kanal Linki" required value="{{ request.form.get('query1', '') }}">
                 </div>
                 <div class="col-md-5">
-                    <input type="text" name="query2" class="form-control search-input" placeholder="Kanal 2 Linki/ID" value="{{ input_data.query2 or '' }}" required>
+                    <input type="text" name="query2" class="form-control search-input" placeholder="2. Kanal Linki" required value="{{ request.form.get('query2', '') }}">
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-audit w-100" type="submit">KIYASLA</button>
+                    <button type="submit" class="btn btn-audit w-100"><i class="fas fa-balance-scale"></i> KIYASLA</button>
                 </div>
             </form>
-            
+
             {% if error %}
-                <div class="alert alert-danger text-center">{{ error }}</div>
+                <div class="alert alert-danger error-box mx-auto" style="max-width: 900px;" role="alert">
+                    <strong>Hata:</strong> {{ error }}
+                </div>
             {% endif %}
 
-            {% if result %}
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>ÖLÇÜT</th>
-                            <th>KANAL 1</th>
-                            <th>KANAL 2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="metric-label">KANAL ADI</td>
-                            <td class="channel-info" style="background-color: #21262d;">{{ result.name1 }}</td>
-                            <td class="channel-info" style="background-color: #21262d;">{{ result.name2 }}</td>
-                        </tr>
-                        
-                        <tr>
-                            <td class="metric-label"><i class="fas fa-users me-2"></i> Abone Sayısı</td>
-                            <td class="{{ result.color_subs1 }}">{{ result.subs1 }}</td>
-                            <td class="{{ result.color_subs2 }}">{{ result.subs2 }}</td>
-                        </tr>
+            {% if results and results.channel1 and results.channel2 %}
+                {% set res1 = results.channel1 %}
+                {% set res2 = results.channel2 %}
 
-                        <tr>
-                            <td class="metric-label"><i class="fas fa-eye me-2"></i> Görüntülenme</td>
-                            <td class="{{ result.color_views1 }}">{{ result.views1 }}</td>
-                            <td class="{{ result.color_views2 }}">{{ result.views2 }}</td>
-                        </tr>
-                        
-                        <tr>
-                            <td class="metric-label"><i class="fas fa-video me-2"></i> Toplam Video</td>
-                            <td class="{{ result.color_videos1 }}">{{ result.videos1 }}</td>
-                            <td class="{{ result.color_videos2 }}">{{ result.videos2 }}</td>
-                        </tr>
+                <div class="row g-4 justify-content-center mt-4">
+                    <div class="col-md-4">
+                        <div class="channel-card glass-card">
+                            <img src="{{ res1.avatar }}" alt="{{ res1.title }}" class="mb-3">
+                            <h2 class="h4 text-white">{{ res1.title }}</h2>
+                            <p class="text-muted">{{ res1.niche }}</p>
+                        </div>
+                    </div>
 
-                        <tr>
-                            <td class="metric-label"><i class="fas fa-graduation-cap me-2"></i> Kanal Notu</td>
-                            <td class="{{ result.color_grade1 }}">{{ result.grade1 }}</td>
-                            <td class="{{ result.color_grade2 }}">{{ result.grade2 }}</td>
-                        </tr>
+                    <div class="col-md-1 d-flex align-items-center justify-content-center">
+                        <div class="vs-divider">VS</div>
+                    </div>
 
-                        <tr>
-                            <td class="metric-label"><i class="fas fa-chart-line me-2"></i> Abone/Gün</td>
-                            <td class="{{ result.color_daily_subs1 }}">{{ result.daily_subs1_formatted }}</td>
-                            <td class="{{ result.color_daily_subs2 }}">{{ result.daily_subs2_formatted }}</td>
-                        </tr>
+                    <div class="col-md-4">
+                        <div class="channel-card glass-card">
+                            <img src="{{ res2.avatar }}" alt="{{ res2.title }}" class="mb-3">
+                            <h2 class="h4 text-white">{{ res2.title }}</h2>
+                            <p class="text-muted">{{ res2.niche }}</p>
+                        </div>
+                    </div>
+                </div>
 
-                        <tr>
-                            <td class="metric-label"><i class="fas fa-dollar-sign me-2"></i> Tahmini Aylık Gelir</td>
-                            <td class="{{ result.color_earnings1 }}">{{ result.earnings1 }}</td>
-                            <td class="{{ result.color_earnings2 }}">{{ result.earnings2 }}</td>
-                        </tr>
+                <div class="comparison-table mt-5 mx-auto" style="max-width: 900px;">
+                    <div class="table-header row g-0">
+                        <div class="col-4 text-start">ÖLÇÜT</div>
+                        <div class="col-4 text-center">KANAL 1</div>
+                        <div class="col-4 text-center">KANAL 2</div>
+                    </div>
 
-                        <tr>
-                            <td class="metric-label"><i class="fas fa-globe me-2"></i> Kanal Ülkesi</td>
-                            <td style="background-color: #21262d;">{{ result.country1 }}</td>
-                            <td style="background-color: #21262d;">{{ result.country2 }}</td>
-                        </tr>
+                    {% set metrics = [
+                        ('Abone Sayısı', 'subs', 'fas fa-users', res1.sub_count, res2.sub_count, res1.sub_count > res2.sub_count),
+                        ('Görüntülenme', 'views', 'fas fa-eye', res1.view_count, res2.view_count, res1.view_count > res2.view_count),
+                        ('Toplam Video', 'videos', 'fas fa-video', res1.video_count, res2.video_count, res1.video_count > res2.video_count),
+                        (content['grade'], 'grade', 'fas fa-award', res1.grade, res2.grade, res1.grade < res2.grade if res1.grade and res2.grade and res1.grade[0] == res2.grade[0] else res1.grade > res2.grade),
+                        (content['daily_sub'], 'daily_sub', 'fas fa-chart-line', res1.daily_subs | int, res2.daily_subs | int, res1.daily_subs | int > res2.daily_subs | int),
+                        (content['earnings'], 'earnings', 'fas fa-dollar-sign', res1.earnings, res2.earnings, res1.earnings > res2.earnings)
+                    ] %}
 
-                    </tbody>
-                </table>
-                <p class="text-muted small mt-3 text-center">*Kıyaslamalar, YouTube'un herkese açık API verilerine ve özel algoritmalarımıza dayanmaktadır.</p>
+                    {% for label, key, icon, val1, val2, is_val1_winner in metrics %}
+                        <div class="table-row row g-0">
+                            <div class="metric-cell col-4"><i class="{{ icon }}"></i> {{ label }}</div>
+                            <div class="value-cell col-4 {% if key in ['grade', 'daily_sub', 'earnings'] and is_val1_winner %}winner{% endif %}" data-value="{{ val1 }}">{{ val1 }}</div>
+                            <div class="value-cell col-4 {% if key in ['grade', 'daily_sub', 'earnings'] and not is_val1_winner %}winner{% endif %}" data-value="{{ val2 }}">{{ val2 }}</div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="table-row row g-0">
+                        <div class="metric-cell col-4"><i class="fas fa-map-marker-alt"></i> {{ content['country'] }}</div>
+                        <div class="value-cell col-4">{{ res1.country }}</div>
+                        <div class="value-cell col-4">{{ res2.country }}</div>
+                    </div>
+                </div>
             {% endif %}
 
         </div>
