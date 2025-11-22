@@ -1,16 +1,19 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="{{ current_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Başlık Oluşturucu</title>
+    <title>AI Başlık Oluşturucu - YT Audit</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ANA TEMA (INDEX.HTML İLE AYNI) */
         :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
         body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
-        h1, h2, h3 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+        h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+        p, span, div, li { color: #e2e8f0; }
+        .text-muted { color: #94a3b8 !important; opacity: 0.8 !important; }
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
         .nav-link { color: #e2e8f0 !important; font-weight: 500; } .nav-link:hover { color: var(--accent) !important; }
         .hero { padding: 60px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); flex: 1; }
@@ -21,6 +24,7 @@
         footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
         .footer-link { color: #8b949e; margin: 0 10px; text-decoration: none; }
         label { color: white; font-weight: bold; margin-bottom: 5px; }
+        .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
     </style>
 </head>
 <body>
