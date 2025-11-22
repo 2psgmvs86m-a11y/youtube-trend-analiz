@@ -41,10 +41,30 @@ translations = {
         'growth': 'Günlük Büyüme',
         'daily_sub': 'Abone/Gün',
         'channel_type': 'Kanal Tipi',
-        'consistency': 'İstikrar Durumu'
+        'consistency': 'İstikrar Durumu',
+        # --- YENİ ÇEVİRİLER ---
+        'seo_score': 'SEO Skoru',
+        'video_title_len': 'Başlık Uzunluğu',
+        'video_tag_count': 'Etiket Sayısı',
+        'video_desc_len': 'Açıklama Uzunluğu',
+        'keyword_match': 'Başlık/Etiket Uyumu',
+        'video_views': 'Görüntülenme',
+        'video_likes': 'Beğenme',
+        'video_comments': 'Yorum'
+        # --- BİTİŞ ---
     },
-    'en': { 'title': 'YouTube Channel Auditor', 'error': 'Invalid Link', 'active': 'ACTIVE', 'passive': 'INACTIVE' },
-    'de': { 'title': 'YouTube-Kanal-Auditor', 'error': 'Ungültiger Link', 'active': 'AKTIV', 'passive': 'INAKTIV' }
+    'en': { 
+        'title': 'YouTube Channel Auditor', 'error': 'Invalid Link', 'active': 'ACTIVE', 'passive': 'INACTIVE', 
+        'seo_score': 'SEO Score', 'video_views': 'Views', 'video_likes': 'Likes', 'video_comments': 'Comments',
+        'video_title_len': 'Title Length', 'video_tag_count': 'Tag Count', 'video_desc_len': 'Description Length',
+        'keyword_match': 'Tag/Title Match'
+    },
+    'de': { 
+        'title': 'YouTube-Kanal-Auditor', 'error': 'Ungültiger Link', 'active': 'AKTIV', 'passive': 'INAKTIV', 
+        'seo_score': 'SEO-Punktzahl', 'video_views': 'Aufrufe', 'video_likes': 'Likes', 'video_comments': 'Kommentare',
+        'video_title_len': 'Titellänge', 'video_tag_count': 'Tag-Anzahl', 'video_desc_len': 'Beschreibungslänge',
+        'keyword_match': 'Tag/Titel Übereinstimmung'
+    }
 }
 
 def format_number(num):
@@ -116,6 +136,89 @@ def extract_strict_link(query):
     handle_match = re.search(r'@([\w.-]+)', query)
     if handle_match: return 'forHandle', '@' + handle_match.group(1)
     return None, None
+
+# --- YENİ FONKSİYON: VİDEO ID ÇEKME ---
+def extract_video_id(query):
+    # Standart YouTube URL veya kısa ID
+    match = re.search(r'(?:youtu\.be\/|v=|embed\/)([\w-]{11})', query)
+    if match: return match.group(1)
+    # Eğer kullanıcı sadece ID girerse
+    if re.match(r'^[\w-]{11}$', query): return query
+    return None
+# ----------------------------------------
+
+# --- YENİ FONKSİYON: VİDEO SEO SKORU HESAPLAMA ---
+def get_video_data(video_id, lang_code='tr'):
+    if not YOUTUBE_API_KEY: return None
+
+    # Video detaylarını, istatistiklerini ve içerik detaylarını çek
+    video_url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id={video_id}&key={YOUTUBE_API_KEY}"
+    video_res = requests.get(video_url).json()
+
+    if 'items' not in video_res or not video_res['items']: return None
+    
+    item = video_res['items'][0]
+    snippet = item['snippet']
+    stats = item['statistics']
+
+    title = snippet.get('title', '')
+    description = snippet.get('description', '')
+    tags = snippet.get('tags', [])
+    view_count = int(stats.get('viewCount', 0))
+    # Beğeni ve yorum sayısı bazen API'da olmayabilir
+    like_count = int(stats.get('likeCount', 0))
+    comment_count = int(stats.get('commentCount', 0))
+
+    # --- SEO Skor Hesaplama Mantığı (Basitleştirilmiş) ---
+    score = 0
+    
+    # 1. Başlık Uzunluğu (Max 60-70 karakter ideal)
+    title_len = len(title)
+    if 40 <= title_len <= 70: score += 20 
+    elif 30 <= title_len <= 80: score += 10
+    
+    # 2. Etiket Sayısı (Optimal: 10-15 etiket)
+    tag_count = len(tags)
+    if 10 <= tag_count <= 15: score += 30
+    elif 5 <= tag_count <= 20: score += 20
+    elif tag_count > 0: score += 10 # En azından etiket var
+    
+    # 3. Açıklama Uzunluğu (Optimal: > 100 karakter, anahtar kelimeler içeriyorsa)
+    desc_len = len(description)
+    if desc_len >= 150: score += 20
+    elif desc_len >= 50: score += 10
+    
+    # 4. Etiketlerin Başlık/Açıklamada Kullanımı (Keyword Match)
+    keywords_in_title_desc = 0
+    for tag in tags:
+        if tag.lower() in title.lower() or tag.lower() in description.lower():
+            keywords_in_title_desc += 1
+    
+    if keywords_in_title_desc >= 3: score += 30
+    elif keywords_in_title_desc >= 1: score += 15
+
+    # Final score'u 100'ü geçmeyecek şekilde sınırla
+    final_score = min(score, 100) 
+    
+    engagement = (like_count + comment_count) / view_count * 100 if view_count > 0 else 0
+
+    return {
+        'title': title,
+        'channel_title': snippet.get('channelTitle', 'N/A'),
+        'thumbnail': snippet['thumbnails']['high']['url'],
+        'tags': tags,
+        'view_count': format_number(view_count),
+        'like_count': format_number(like_count),
+        'comment_count': format_number(comment_count),
+        'engagement': f"{engagement:.2f}%",
+        'seo_score': final_score,
+        'title_len': title_len,
+        'tag_count': tag_count,
+        'desc_len': desc_len,
+        'keyword_match': keywords_in_title_desc
+    }
+# ---------------------------------------------------------------------------------------------------
+
 
 # --- GROQ API İLE İÇERİK OLUŞTURMA (Llama 3.1) ---
 def generate_ai_content(topic, style):
@@ -282,7 +385,7 @@ def get_channel_data(query, lang_code='tr'):
         'grade': grade, 'niche': niche_name, 'upload_schedule': peak_hour_str, 'tags': keywords,
         'monetized': is_monetized, 'status_key': status_key, 'warning_text': warning_text, 'earnings': earnings_str,
         'videos': videos, 'country': country_code, 'age': age_str, 'daily_subs': daily_subs, 'channel_type': channel_type_label,
-        'hidden_videos': hidden_videos, 'consistency': consistency_data
+        'hidden_videos': hidden_videos, 'consistency': consistency_data, 'id': channel_id # Kanal ID'si karşılaştırma için eklendi
     }
 
 @app.route('/', methods=['GET', 'POST'])
@@ -354,6 +457,68 @@ def ai_generator():
 
     return render_template('ai_tool.html', content=content, ai_result=ai_result, input_data=input_data, error=error_message, 
                            captcha_question=captcha_question, uses_left=uses_left, max_uses=MAX_USES, current_lang=request.args.get('lang', 'tr'))
+
+# --- YENİ ROTA: KANAL KIYASLAMA ---
+@app.route('/araclar/kanal-karsilastir', methods=['GET', 'POST'])
+def channel_vs():
+    results = {}
+    error = None
+    
+    lang = request.args.get('lang', 'tr')
+    content = translations.get(lang, translations['tr'])
+
+    if request.method == 'POST':
+        query1 = request.form.get('query1')
+        query2 = request.form.get('query2')
+
+        try:
+            # Kanal 1
+            result1 = get_channel_data(query1, lang)
+            if not result1:
+                error = f"Kanal 1 için hata: {content['error']}"
+            else:
+                results['channel1'] = result1
+            
+            # Kanal 2
+            result2 = get_channel_data(query2, lang)
+            if not result2:
+                error = f"Kanal 2 için hata: {content['error']}"
+            else:
+                results['channel2'] = result2
+            
+            if 'channel1' in results and 'channel2' in results:
+                error = None # Hata yok, başarılı
+                
+        except Exception:
+            error = "Sunucu hatası oluştu. Lütfen linkleri kontrol edin."
+
+    return render_template('channel_vs.html', content=content, results=results, error=error, current_lang=lang)
+    
+# --- YENİ ROTA: VİDEO SEO SKORU ---
+@app.route('/araclar/video-seo', methods=['GET', 'POST'])
+def video_seo():
+    result = None
+    error = None
+    
+    lang = request.args.get('lang', 'tr')
+    content = translations.get(lang, translations['tr'])
+
+    if request.method == 'POST':
+        query = request.form.get('query')
+        video_id = extract_video_id(query)
+        
+        if not video_id:
+            error = "Lütfen geçerli bir YouTube Video Linki veya ID'si girin."
+        else:
+            try:
+                result = get_video_data(video_id, lang)
+                if not result:
+                    error = "Video bilgisi alınamadı. Lütfen ID'yi kontrol edin."
+            except Exception:
+                error = "Sunucu hatası oluştu."
+
+    return render_template('video_seo.html', content=content, result=result, error=error, current_lang=lang)
+# -----------------------------------
 
 @app.route('/gizlilik')
 def privacy(): return render_template('privacy.html', page_key='privacy')
