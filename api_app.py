@@ -8,9 +8,12 @@ from datetime import datetime
 from collections import Counter
 
 app = Flask(__name__)
+# Gizlilik ve güvenlik için gerekli olsa da, bu örnekte ana işlevsellik dışıdır.
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_change_me')
 
+# API Anahtarları
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY') # YENİ ZEKAYI KULLANMAK İÇİN GEREKLİ
 
 translations = {
     'tr': {
@@ -113,59 +116,55 @@ def extract_strict_link(query):
     if handle_match: return 'forHandle', '@' + handle_match.group(1)
     return None, None
 
-# --- GÜNCELLENMİŞ VE AKILLANMIŞ MİNİ YAPAY ZEKA MOTORU ---
-def generate_local_content(topic, style):
-    topic_upper = topic.upper()
-    topic_lower = topic.lower()
+# --- HARİCİ GEMINI API İLE İÇERİK OLUŞTURMA (DÜŞÜNEBİLEN MOD) ---
+def generate_ai_content(topic, style):
+    if not GEMINI_API_KEY:
+        return {"error": "GEMINI API Anahtarı Tanımlı Değil. Render ortam değişkenlerini kontrol edin."}
     
-    # 5 Adet Daha Gramer Dostu Şablon (Tekrar Etme Riskini azaltmak için uzun liste)
-    templates = {
-        'Viral ve Merak Uyandıran': [
-            f"BU {topic_upper} HAKKINDAKİ GERÇEKLERİ BİLİYOR MUSUNUZ? (Çok Şaşıracaksınız)",
-            f"YOUTUBE'DA {topic_lower} İLE ZENGİN OLMAK ARTIK ÇOK KOLAY! (Gizli Yöntem)",
-            f"{topic_upper} YAPARKEN YAPILAN {random.randint(3, 5)} KORKUNÇ HATA! İzlemeden Başlama.",
-            f"TEST ETTİK! {topic_upper} DİĞERLERİNDEN FARKLI MI? {random.choice(['GÖRMEK ZORUNDASIN', 'KANITLI SONUÇ'])}",
-            f"UZMANLAR YALAN SÖYLÜYOR: {topic_upper} Yapmanın ASIL YOLU {random.randint(2025, 2027)}",
-        ],
-        'Eğitici ve Bilgilendirici': [
-            f"{topic} Öğrenmek: Yeni Başlayanlar İçin Detaylı {random.choice(['Kılavuz', 'Yol Haritası'])}.",
-            f"{topic} Alanında {random.randint(5, 10)} Ana Kural: Başarıya Giden Kesin Adımlar.",
-            f"Adım Adım {topic_lower} Nasıl Yapılır? (Profesyonel İpuçları).",
-            f"2025'te {topic} Trendleri ve Kazanma Stratejileri.",
-            f"{topic} İçin En İyi {random.choice(['Kaynaklar', 'Uygulamalar', 'Yöntemler'])}: Kanıtlanmış Listemiz.",
-        ],
-        'Listeleme ve Hızlı Tüketim': [
-            f"Tüm Zamanların En İyi {random.randint(7, 12)} {topic} Listesi! (Kaçırma)",
-            f"{topic} Yaparken BİLİNMESİ GEREKEN {random.randint(5, 15)} İnanılmaz İpucu.",
-            f"Sadece 90 Saniyede: {topic} Hakkında Bilmeniz Gereken Her Şeyin Özeti.",
-            f"İŞİNİZİ KOLAYLAŞTIRACAK {random.randint(3, 5)} {topic} Aracı.",
-            f"{topic} İle Başarılı Olmanın {random.randint(5, 10)} Kısa Yolu.",
-        ],
-        'Şok Edici ve Duygusal': [
-            f"HAYATIMIZI DEĞİŞTİREN {topic_upper} KARARI... (Bunu yaparken çok zorlandık)",
-            f"{topic_lower} YÜZÜNDEN BAŞIMIZA GELEN EN BÜYÜK FELAKET...",
-            f"ARTIKSİZ SAKLAMAYACAĞIM: {topic} İle İlgili Tüm Gerçekler ve Pişmanlıklarım.",
-            f"HERKESİN {topic} DEDİĞİNE BAKMAYIN. İŞİN ASLI BU!",
-            f"{topic_upper} ARTIK YETER! {random.choice(['SON NOKTAYI KOYDUK', 'ÇOK ÖFKELİYİZ'])}",
-        ],
+    # LLM'e gönderilecek talimat
+    prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak YouTube için 3 adet kısa, viral başlık ve 1 adet 150 kelimelik ilgi çekici açıklama metni oluştur. Başlıkları madde madde ayır."
+    
+    API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+    
+    headers = {
+        'Content-Type': 'application/json',
     }
+    params = {
+        'key': GEMINI_API_KEY
+    }
+    payload = {
+        'contents': [{'parts': [{'text': prompt}]}],
+        'config': {
+            'temperature': 0.8
+        }
+    }
+    
+    try:
+        response = requests.post(API_URL, headers=headers, params=params, json=payload, timeout=30)
+        response.raise_for_status() 
+        data = response.json()
+        
+        if data.get('candidates'):
+            generated_text = data['candidates'][0]['content']['parts'][0]['text']
+            
+            # Başlık ve açıklamayı ayırma
+            parts = generated_text.split('\n')
+            titles = [p.strip() for p in parts if p.strip() and p.strip().startswith(('1.', '2.', '3.', '-', '*'))]
+            description = "\n".join([p for p in parts if not p.strip().startswith(('1.', '2.', '3.', '-', '*'))]).strip()
 
-    # Rastgele 3 başlık seç
-    selected_templates = templates.get(style, templates['Eğitici ve Bilgilendirici'])
-    titles = random.sample(selected_templates, k=3)
-    
-    # Basit bir açıklama metni
-    description = (
-        f"Selam arkadaşlar! Bugün {topic} konusunu ele aldık. Bu videomuz {style} stilde size en güncel ve işe yarar bilgileri sunuyor. \n"
-        f"Videodaki tüm {topic_lower} ipuçlarını not almayı unutmayın. Abone olarak bize destek olabilirsiniz!"
-    )
-    
-    return {
-        "titles": [f"{i+1}. {t}" for i, t in enumerate(titles)], # 1., 2., 3. diye numaralandırma
-        "description": description + "\n\n#ytseo #viral #youtube #turkce #trend",
-        "raw": f"Motor: Lokal Kural Tabanlı. Konu: {topic}, Stil: {style}. (Saçma kelime riski minimize edildi.)"
-    }
-# ----------------------------------------------------------------------------------------------------------------------------------------------------------
+            return {
+                "titles": titles[:3],
+                "description": description if description else generated_text,
+                "raw": generated_text
+            }
+
+        return {"error": "Yapay Zeka Metin Üretemedi (Boş Cevap)"}
+
+    except requests.exceptions.RequestException as e:
+        return {"error": f"API Bağlantı Hatası: Kotanız veya anahtarınızı kontrol edin."}
+    except Exception:
+        return {"error": "Bir sorun oluştu. Lütfen girdilerinizi kontrol edin."}
+# ---------------------------------------------------------------------------------------------------
 
 
 def get_channel_data(query, lang_code='tr'):
@@ -209,15 +208,34 @@ def get_channel_data(query, lang_code='tr'):
     videos_url = f"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId={uploads_id}&maxResults=10&key={YOUTUBE_API_KEY}"
     videos_res = requests.get(videos_url).json()
 
-    # KANAL TİPİ ANALİZİ
+    playlist_total = videos_res.get('pageInfo', {}).get('totalResults', 0)
+    hidden_videos = max(0, playlist_total - video_count)
+
+    videos = []
+    upload_hours = []
+    
     shorts_count = 0
     long_videos_count = 0
+    
     for item in videos_res.get('items', []):
+        pub_time = item['snippet']['publishedAt']
+        dt = datetime.strptime(pub_time, "%Y-%m-%dT%H:%M:%SZ")
+        upload_hours.append(dt.hour)
+        
         duration_str = item['contentDetails'].get('duration', 'PT0S')
         seconds = parse_duration(duration_str)
+        
         if seconds <= 60: shorts_count += 1
         else: long_videos_count += 1
-    
+
+        if len(videos) < 3:
+            videos.append({
+                'title': item['snippet']['title'],
+                'thumb': item['snippet']['thumbnails']['high']['url'],
+                'id': item['snippet']['resourceId']['videoId'],
+                'published': dt.strftime("%d.%m.%Y")
+            })
+
     total_analyzed = shorts_count + long_videos_count
     channel_type_label = "Belirsiz"
     if total_analyzed > 0:
@@ -226,11 +244,15 @@ def get_channel_data(query, lang_code='tr'):
         elif shorts_ratio < 20: channel_type_label = "Uzun Video 🎥"
         else: channel_type_label = "Karışık / Dengeli ⚖️"
     
-    # DİĞER ANALİZLER
     consistency_label = "Stabil"
     if daily_subs > 500: consistency_label = "Yükselişte 🚀"
     consistency_data = {'label': consistency_label}
+    
     peak_hour_str = "Belirsiz"
+    if upload_hours:
+        common_hour = Counter(upload_hours).most_common(1)[0][0]
+        tr_hour = (common_hour + 3) % 24
+        peak_hour_str = f"{tr_hour}:00 - {tr_hour+1}:00 (TR)"
     
     base_cpm, niche_name = get_niche_cpm(keywords, snippet['title'], snippet['description'])
     country_multiplier = get_country_multiplier(country_code)
@@ -250,17 +272,35 @@ def get_channel_data(query, lang_code='tr'):
     status_key = 'active' if is_monetized else 'passive'
     warning_text = translations[lang_code]['warn_monetization'] if not is_monetized else ""
     grade = calculate_grade(sub_count, view_count, video_count)
-    hidden_videos = 0 # Gizli video analizi için API puanı harcamamak için pasif
 
     return {
         'title': snippet['title'], 'desc': snippet['description'][:100], 'avatar': snippet['thumbnails']['medium']['url'],
         'sub_count': format_number(sub_count), 'view_count': format_number(view_count), 'video_count': format_number(video_count),
         'grade': grade, 'niche': niche_name, 'upload_schedule': peak_hour_str, 'tags': keywords,
         'monetized': is_monetized, 'status_key': status_key, 'warning_text': warning_text, 'earnings': earnings_str,
-        'country': country_code, 'age': age_str, 'daily_subs': daily_subs, 'channel_type': channel_type_label,
+        'videos': videos, 'country': country_code, 'age': age_str, 'daily_subs': daily_subs, 'channel_type': channel_type_label,
         'hidden_videos': hidden_videos, 'consistency': consistency_data
     }
 
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    lang = request.args.get('lang', 'tr')
+    if lang not in translations: lang = 'tr'
+    content = translations[lang]
+    result = None
+    error = None
+
+    if request.method == 'POST':
+        query = request.form.get('query')
+        if query:
+            try:
+                result = get_channel_data(query, lang)
+                if not result: error = content['error']
+            except Exception as e:
+                print(f"Hata: {e}")
+                error = "Sunucu hatası oluştu."
+
+    return render_template('index.html', content=content, current_lang=lang, result=result, error=error)
 
 @app.route('/araclar/ai-baslik', methods=['GET', 'POST'])
 def ai_generator():
@@ -272,11 +312,12 @@ def ai_generator():
         style = request.form.get('style')
         
         if topic and style:
-            # Kendi lokal Yapay Zeka motorunuzu çağırın
-            ai_result = generate_local_content(topic, style)
+            # Yapay Zeka motorunu çağırın
+            ai_result = generate_ai_content(topic, style)
             input_data = {'topic': topic, 'style': style}
 
     return render_template('ai_tool.html', ai_result=ai_result, input_data=input_data)
+
 
 @app.route('/gizlilik')
 def privacy(): return render_template('privacy.html', page_key='privacy')
