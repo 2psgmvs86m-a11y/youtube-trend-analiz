@@ -10,7 +10,6 @@ from collections import Counter
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_change_me')
 
-# API Anahtarı (Artık sadece YouTube API için gerekli)
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
 
 translations = {
@@ -92,7 +91,6 @@ def parse_duration(duration_str):
 def check_real_monetization(channel_id):
     url = f"https://www.youtube.com/channel/{channel_id}?hl=en"
     try:
-        # Proxy yok, direkt bağlantı
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             "Accept-Language": "en-US,en;q=0.9",
@@ -115,49 +113,60 @@ def extract_strict_link(query):
     if handle_match: return 'forHandle', '@' + handle_match.group(1)
     return None, None
 
-# --- YENİ: KENDİ MİNİ YAPAY ZEKANIZ ---
+# --- GÜNCELLENMİŞ VE AKILLANMIŞ MİNİ YAPAY ZEKA MOTORU ---
 def generate_local_content(topic, style):
-    # Popüler Kalıplar (Template Corpus)
+    topic_upper = topic.upper()
+    topic_lower = topic.lower()
+    
+    # 5 Adet Daha Gramer Dostu Şablon (Tekrar Etme Riskini azaltmak için uzun liste)
     templates = {
         'Viral ve Merak Uyandıran': [
-            f"BUNA ASLA İNANMAYACAKSIN! {topic} Hakkında Şok Eden Gerçek.",
-            f"TEST ETTİK! {topic} İşine Yarıyor Mu? (ASLA KULLANMA)",
-            f"UZMANLAR YALAN SÖYLÜYOR: {topic} Yapmanın Gizli Yolu {random.randint(5, 15)}",
+            f"BU {topic_upper} HAKKINDAKİ GERÇEKLERİ BİLİYOR MUSUNUZ? (Çok Şaşıracaksınız)",
+            f"YOUTUBE'DA {topic_lower} İLE ZENGİN OLMAK ARTIK ÇOK KOLAY! (Gizli Yöntem)",
+            f"{topic_upper} YAPARKEN YAPILAN {random.randint(3, 5)} KORKUNÇ HATA! İzlemeden Başlama.",
+            f"TEST ETTİK! {topic_upper} DİĞERLERİNDEN FARKLI MI? {random.choice(['GÖRMEK ZORUNDASIN', 'KANITLI SONUÇ'])}",
+            f"UZMANLAR YALAN SÖYLÜYOR: {topic_upper} Yapmanın ASIL YOLU {random.randint(2025, 2027)}",
         ],
         'Eğitici ve Bilgilendirici': [
-            f"{topic} Öğrenmek İçin Nihai Rehber (2025 Güncel).",
-            f"Adım Adım {topic}: Yeni Başlayanlar İçin Detaylı Kılavuz.",
-            f"{topic} Alanında {random.randint(3, 7)} Ana Kural ve Başarı Sırları.",
+            f"{topic} Öğrenmek: Yeni Başlayanlar İçin Detaylı {random.choice(['Kılavuz', 'Yol Haritası'])}.",
+            f"{topic} Alanında {random.randint(5, 10)} Ana Kural: Başarıya Giden Kesin Adımlar.",
+            f"Adım Adım {topic_lower} Nasıl Yapılır? (Profesyonel İpuçları).",
+            f"2025'te {topic} Trendleri ve Kazanma Stratejileri.",
+            f"{topic} İçin En İyi {random.choice(['Kaynaklar', 'Uygulamalar', 'Yöntemler'])}: Kanıtlanmış Listemiz.",
         ],
         'Listeleme ve Hızlı Tüketim': [
-            f"Tüm Zamanların En İyi {random.randint(5, 10)} {topic} Listesi.",
+            f"Tüm Zamanların En İyi {random.randint(7, 12)} {topic} Listesi! (Kaçırma)",
             f"{topic} Yaparken BİLİNMESİ GEREKEN {random.randint(5, 15)} İnanılmaz İpucu.",
-            f"Sadece {random.randint(60, 180)} Saniyede: {topic} Özeti!",
+            f"Sadece 90 Saniyede: {topic} Hakkında Bilmeniz Gereken Her Şeyin Özeti.",
+            f"İŞİNİZİ KOLAYLAŞTIRACAK {random.randint(3, 5)} {topic} Aracı.",
+            f"{topic} İle Başarılı Olmanın {random.randint(5, 10)} Kısa Yolu.",
         ],
         'Şok Edici ve Duygusal': [
-            f"HAYATIMIZI DEĞİŞTİREN {topic} Kararı... (Çok Zor Oldu)",
-            f"{topic} Yüzünden Başımıza GelEN EN KÖTÜ {random.choice(['OLAY', 'ŞEY'])}.",
-            f"ARTIK SAKLAMAYACAĞIM: {topic} İle İlgili Tüm Gerçekler ve Pişmanlıklarım.",
+            f"HAYATIMIZI DEĞİŞTİREN {topic_upper} KARARI... (Bunu yaparken çok zorlandık)",
+            f"{topic_lower} YÜZÜNDEN BAŞIMIZA GELEN EN BÜYÜK FELAKET...",
+            f"ARTIKSİZ SAKLAMAYACAĞIM: {topic} İle İlgili Tüm Gerçekler ve Pişmanlıklarım.",
+            f"HERKESİN {topic} DEDİĞİNE BAKMAYIN. İŞİN ASLI BU!",
+            f"{topic_upper} ARTIK YETER! {random.choice(['SON NOKTAYI KOYDUK', 'ÇOK ÖFKELİYİZ'])}",
         ],
     }
 
-    # Açıklama Metni Oluşturma
-    description_templates = [
-        f"Selam arkadaşlar! Bugün {topic} konusunu ele aldık. Bu video, {style} stilde size en güncel bilgileri sunuyor. {random.choice(['Beğenmeyi ve abone olmayı', 'Yorum yapmayı'])} unutmayın!",
-        f"Bu videoda {topic} ile ilgili tüm bilinmeyenleri açığa çıkarıyoruz. Bu {style} içerik tam size göre. İyi seyirler dileriz!",
-    ]
-    
-    # Sonuçları Hazırla
+    # Rastgele 3 başlık seç
     selected_templates = templates.get(style, templates['Eğitici ve Bilgilendirici'])
-    titles = [t.replace('{topic}', topic) for t in random.sample(selected_templates, k=3)]
-    description = random.choice(description_templates).replace('{topic}', topic).replace('{style}', style)
+    titles = random.sample(selected_templates, k=3)
+    
+    # Basit bir açıklama metni
+    description = (
+        f"Selam arkadaşlar! Bugün {topic} konusunu ele aldık. Bu videomuz {style} stilde size en güncel ve işe yarar bilgileri sunuyor. \n"
+        f"Videodaki tüm {topic_lower} ipuçlarını not almayı unutmayın. Abone olarak bize destek olabilirsiniz!"
+    )
     
     return {
-        "titles": titles,
-        "description": description + "\n\n#ytseo #viral #youtube #turkce",
-        "raw": f"Konu: {topic}, Stil: {style}. Kural Tabanlı Motor tarafından oluşturulmuştur."
+        "titles": [f"{i+1}. {t}" for i, t in enumerate(titles)], # 1., 2., 3. diye numaralandırma
+        "description": description + "\n\n#ytseo #viral #youtube #turkce #trend",
+        "raw": f"Motor: Lokal Kural Tabanlı. Konu: {topic}, Stil: {style}. (Saçma kelime riski minimize edildi.)"
     }
-# ------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 def get_channel_data(query, lang_code='tr'):
     if not YOUTUBE_API_KEY: raise Exception("API Key Yok!")
@@ -165,11 +174,6 @@ def get_channel_data(query, lang_code='tr'):
     query_type, query_value = extract_strict_link(query)
     if not query_type: return None 
     
-    # API'den Veri Çekme (Daha önceki fonksiyonlar)
-    # ... (kod devam eder) ...
-    # (API çağrıları, veri işleme, is_monetized hesaplamaları...)
-    
-    # Önceki get_channel_data fonksiyonunun geri kalanını ve return kısmını ekliyoruz
     channel_id = None
     if query_type == 'id': channel_id = query_value
     elif query_type == 'forHandle':
@@ -177,6 +181,7 @@ def get_channel_data(query, lang_code='tr'):
         stats_res = requests.get(stats_url).json()
         if stats_res.get('items'): channel_id = stats_res['items'][0]['id']
         else: return None
+
     if not channel_id: return None
 
     stats_url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet,contentDetails,brandingSettings&id={channel_id}&key={YOUTUBE_API_KEY}"
@@ -186,6 +191,7 @@ def get_channel_data(query, lang_code='tr'):
     info = stats_res['items'][0]
     stats = info['statistics']
     snippet = info['snippet']
+
     sub_count = int(stats.get('subscriberCount', 0))
     view_count = int(stats.get('viewCount', 0))
     video_count = int(stats.get('videoCount', 0))
@@ -193,6 +199,7 @@ def get_channel_data(query, lang_code='tr'):
     country_code = snippet.get('country', 'TR')
     age_str, days_active = calculate_age_stats(snippet.get('publishedAt', ''))
     daily_subs = int(sub_count / days_active) if days_active > 0 else 0
+    
     keywords = []
     if 'brandingSettings' in info and 'channel' in info['brandingSettings']:
         keys = info['brandingSettings']['channel'].get('keywords', '')
@@ -202,32 +209,15 @@ def get_channel_data(query, lang_code='tr'):
     videos_url = f"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId={uploads_id}&maxResults=10&key={YOUTUBE_API_KEY}"
     videos_res = requests.get(videos_url).json()
 
-    # DİĞER PREMİUM ÖZELLİKLER
-    videos = []
-    upload_hours = []
-    
+    # KANAL TİPİ ANALİZİ
     shorts_count = 0
     long_videos_count = 0
-    
     for item in videos_res.get('items', []):
-        pub_time = item['snippet']['publishedAt']
-        dt = datetime.strptime(pub_time, "%Y-%m-%dT%H:%M:%SZ")
-        upload_hours.append(dt.hour)
-        
         duration_str = item['contentDetails'].get('duration', 'PT0S')
         seconds = parse_duration(duration_str)
-        
         if seconds <= 60: shorts_count += 1
         else: long_videos_count += 1
-
-        if len(videos) < 3:
-            videos.append({
-                'title': item['snippet']['title'],
-                'thumb': item['snippet']['thumbnails']['high']['url'],
-                'id': item['snippet']['resourceId']['videoId'],
-                'published': dt.strftime("%d.%m.%Y")
-            })
-
+    
     total_analyzed = shorts_count + long_videos_count
     channel_type_label = "Belirsiz"
     if total_analyzed > 0:
@@ -236,15 +226,11 @@ def get_channel_data(query, lang_code='tr'):
         elif shorts_ratio < 20: channel_type_label = "Uzun Video 🎥"
         else: channel_type_label = "Karışık / Dengeli ⚖️"
     
+    # DİĞER ANALİZLER
     consistency_label = "Stabil"
     if daily_subs > 500: consistency_label = "Yükselişte 🚀"
     consistency_data = {'label': consistency_label}
-    
     peak_hour_str = "Belirsiz"
-    if upload_hours:
-        common_hour = Counter(upload_hours).most_common(1)[0][0]
-        tr_hour = (common_hour + 3) % 24
-        peak_hour_str = f"{tr_hour}:00 - {tr_hour+1}:00 (TR)"
     
     base_cpm, niche_name = get_niche_cpm(keywords, snippet['title'], snippet['description'])
     country_multiplier = get_country_multiplier(country_code)
@@ -255,8 +241,7 @@ def get_channel_data(query, lang_code='tr'):
     is_monetized = False
     if sub_count >= 1000:
         scraping_result = check_real_monetization(channel_id)
-        if scraping_result:
-            is_monetized = True
+        if scraping_result: is_monetized = True
         else:
             if sub_count > 5000 and view_count > 500000: is_monetized = True
             else: is_monetized = False
@@ -265,38 +250,18 @@ def get_channel_data(query, lang_code='tr'):
     status_key = 'active' if is_monetized else 'passive'
     warning_text = translations[lang_code]['warn_monetization'] if not is_monetized else ""
     grade = calculate_grade(sub_count, view_count, video_count)
+    hidden_videos = 0 # Gizli video analizi için API puanı harcamamak için pasif
 
     return {
         'title': snippet['title'], 'desc': snippet['description'][:100], 'avatar': snippet['thumbnails']['medium']['url'],
         'sub_count': format_number(sub_count), 'view_count': format_number(view_count), 'video_count': format_number(video_count),
         'grade': grade, 'niche': niche_name, 'upload_schedule': peak_hour_str, 'tags': keywords,
-        'monetized': is_monetized, 'status_key': status_key, 'warning_text': warning_text, 'earnings': earnings_str, 'videos': videos,
-        'country': country_code, 'age': age_str, 'daily_subs': daily_subs, 'channel_type': channel_type_label, 'consistency': consistency_data
+        'monetized': is_monetized, 'status_key': status_key, 'warning_text': warning_text, 'earnings': earnings_str,
+        'country': country_code, 'age': age_str, 'daily_subs': daily_subs, 'channel_type': channel_type_label,
+        'hidden_videos': hidden_videos, 'consistency': consistency_data
     }
-# --------------------------------------------------------------------------------------------------------------------------------------
 
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    lang = request.args.get('lang', 'tr')
-    if lang not in translations: lang = 'tr'
-    content = translations[lang]
-    result = None
-    error = None
-
-    if request.method == 'POST':
-        query = request.form.get('query')
-        if query:
-            try:
-                result = get_channel_data(query, lang)
-                if not result: error = content['error']
-            except Exception as e:
-                print(f"Hata: {e}")
-                error = "Sunucu hatası oluştu."
-
-    return render_template('index.html', content=content, current_lang=lang, result=result, error=error)
-
-# --- YENİ: KENDİ YAPAY ZEKA ROTALARI ---
 @app.route('/araclar/ai-baslik', methods=['GET', 'POST'])
 def ai_generator():
     ai_result = None
@@ -311,9 +276,7 @@ def ai_generator():
             ai_result = generate_local_content(topic, style)
             input_data = {'topic': topic, 'style': style}
 
-    # ai_tool.html'i kullanacağız
     return render_template('ai_tool.html', ai_result=ai_result, input_data=input_data)
-# ----------------------------------------
 
 @app.route('/gizlilik')
 def privacy(): return render_template('privacy.html', page_key='privacy')
