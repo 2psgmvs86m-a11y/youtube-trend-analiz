@@ -6,42 +6,14 @@ from flask import Flask, render_template, request, session, redirect, url_for
 from datetime import datetime
 from collections import Counter
 
-# Yeni Kütüphaneler:
-from google.auth.transport.requests import Request
-from google.oauth2 import service_account
+# --- GOOGLE-AUTH KÜTÜPHANELERİ KALDIRILDI ---
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_change_me')
 
 # API Anahtarları
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
-# JSON dosyasını ortam değişkeninden çekiyoruz (GEMINI_SERVICE_ACCOUNT_JSON)
-SERVICE_ACCOUNT_JSON = os.environ.get('GEMINI_SERVICE_ACCOUNT_JSON') 
-
-# --- GEMINI YETKİLENDİRME (CREDENTIALS) KONTROLÜ ---
-GEMINI_CREDENTIALS = None
-if SERVICE_ACCOUNT_JSON:
-    try:
-        # JSON string'i yükleyip Service Account Credential'a çeviriyoruz
-        info = json.loads(SERVICE_ACCOUNT_JSON)
-        # Gerekli scope'u (izin kapsamı) tanımlıyoruz
-        SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
-        GEMINI_CREDENTIALS = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
-    except Exception as e:
-        print(f"!!! GEMINI JSON YÜKLEME HATASI: {e} !!!")
-
-# --- GLOBAL ERİŞİM TOKEN'I YÖNETİMİ ---
-# Tokenlar belli bir süre sonra sona erer, bu yüzden sürekli yenilememiz gerekir
-def get_access_token():
-    if not GEMINI_CREDENTIALS:
-        return None
-    
-    if not GEMINI_CREDENTIALS.valid:
-        # Token süresi dolduysa yenile
-        GEMINI_CREDENTIALS.refresh(Request())
-    
-    return GEMINI_CREDENTIALS.token
-# ----------------------------------------------------
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY') # YENİ ANAHTAR BURADAN ÇEKİLECEK
 
 translations = {
     'tr': {
@@ -144,27 +116,32 @@ def extract_strict_link(query):
     if handle_match: return 'forHandle', '@' + handle_match.group(1)
     return None, None
 
-# --- HARİCİ GEMINI API İLE İÇERİK OLUŞTURMA (DÜŞÜNEBİLEN MOD) ---
+# --- YENİ: OPENAI API İLE İÇERİK OLUŞTURMA (GPT-3.5 TURBO) ---
 def generate_ai_content(topic, style):
-    access_token = get_access_token()
-    if not access_token:
-        return {"error": "Hata: Gemini Yetkilendirme Başarısız. JSON verinizi ve Google yetkilerini kontrol edin."}
+    if not OPENAI_API_KEY:
+        return {"error": "OPENAI_API_KEY Render'da tanımlı değil."}
     
-    prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak YouTube için 3 adet kısa, viral başlık ve 1 adet 150 kelimelik ilgi çekici açıklama metni oluştur. Başlıkları madde madde ayır."
+    API_URL = "https://api.openai.com/v1/chat/completions"
     
-    # API URL'si artık KEY yerine Service Account ile çalışıyor
-    API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+    # Sisteme Talimat (Persona)
+    system_prompt = "Sen, YouTube içerik üreticileri için optimize başlık ve açıklama üreten profesyonel bir SEO uzmanısın. Cevabını sadece istenen metinle sınırla."
     
+    # Kullanıcıdan Gelen Talimat
+    user_prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak Türkçe, çok yaratıcı, 3 adet viral başlık ve 1 adet 150 kelimelik profesyonel açıklama metni oluştur. Başlıkları mutlaka ayrı bir satırda numaralandır."
+
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token}' # Erişim token'ı kullanılıyor
+        'Authorization': f'Bearer {OPENAI_API_KEY}' # Anahtar, Bearer olarak gönderiliyor
     }
 
     payload = {
-        'contents': [{'parts': [{'text': prompt}]}],
-        'config': {
-            'temperature': 0.8
-        }
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        "temperature": 0.8,
+        "max_tokens": 1024
     }
     
     try:
@@ -172,9 +149,10 @@ def generate_ai_content(topic, style):
         response.raise_for_status() 
         data = response.json()
         
-        if data.get('candidates'):
-            generated_text = data['candidates'][0]['content']['parts'][0]['text']
+        if data.get('choices'):
+            generated_text = data['choices'][0]['message']['content']
             
+            # Başlık ve açıklamayı ayırma
             parts = generated_text.split('\n')
             titles = [p.strip() for p in parts if p.strip() and p.strip().startswith(('1.', '2.', '3.', '-', '*'))]
             description = "\n".join([p for p in parts if not p.strip().startswith(('1.', '2.', '3.', '-', '*'))]).strip()
@@ -188,9 +166,11 @@ def generate_ai_content(topic, style):
         return {"error": "Yapay Zeka Metin Üretemedi (Boş Cevap)"}
 
     except requests.exceptions.RequestException as e:
-        return {"error": f"API Bağlantı Hatası: Kota/Faturalandırma Sorunu. Gemini panelinizi kontrol edin."}
+        # 401: Yanlış anahtar, 429: Kota, 403: Erişim yok
+        return {"error": f"API Bağlantı Hatası: Kota veya Faturalandırma sorunu. OpenAI panelinizi kontrol edin."}
     except Exception:
         return {"error": "Bir sorun oluştu. Lütfen girdilerinizi kontrol edin."}
+# ---------------------------------------------------------------------------------------------------
 
 
 def get_channel_data(query, lang_code='tr'):
@@ -338,7 +318,6 @@ def ai_generator():
         style = request.form.get('style')
         
         if topic and style:
-            # Yapay Zeka motorunu çağırın
             ai_result = generate_ai_content(topic, style)
             input_data = {'topic': topic, 'style': style}
 
