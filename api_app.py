@@ -2,18 +2,46 @@ import os
 import requests
 import json
 import re
-import random
 from flask import Flask, render_template, request, session, redirect, url_for
 from datetime import datetime
 from collections import Counter
 
+# Yeni Kütüphaneler:
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+
 app = Flask(__name__)
-# Gizlilik ve güvenlik için gerekli olsa da, bu örnekte ana işlevsellik dışıdır.
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_change_me')
 
 # API Anahtarları
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY') # YENİ ZEKAYI KULLANMAK İÇİN GEREKLİ
+# JSON dosyasını ortam değişkeninden çekiyoruz (GEMINI_SERVICE_ACCOUNT_JSON)
+SERVICE_ACCOUNT_JSON = os.environ.get('GEMINI_SERVICE_ACCOUNT_JSON') 
+
+# --- GEMINI YETKİLENDİRME (CREDENTIALS) KONTROLÜ ---
+GEMINI_CREDENTIALS = None
+if SERVICE_ACCOUNT_JSON:
+    try:
+        # JSON string'i yükleyip Service Account Credential'a çeviriyoruz
+        info = json.loads(SERVICE_ACCOUNT_JSON)
+        # Gerekli scope'u (izin kapsamı) tanımlıyoruz
+        SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+        GEMINI_CREDENTIALS = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
+    except Exception as e:
+        print(f"!!! GEMINI JSON YÜKLEME HATASI: {e} !!!")
+
+# --- GLOBAL ERİŞİM TOKEN'I YÖNETİMİ ---
+# Tokenlar belli bir süre sonra sona erer, bu yüzden sürekli yenilememiz gerekir
+def get_access_token():
+    if not GEMINI_CREDENTIALS:
+        return None
+    
+    if not GEMINI_CREDENTIALS.valid:
+        # Token süresi dolduysa yenile
+        GEMINI_CREDENTIALS.refresh(Request())
+    
+    return GEMINI_CREDENTIALS.token
+# ----------------------------------------------------
 
 translations = {
     'tr': {
@@ -118,20 +146,20 @@ def extract_strict_link(query):
 
 # --- HARİCİ GEMINI API İLE İÇERİK OLUŞTURMA (DÜŞÜNEBİLEN MOD) ---
 def generate_ai_content(topic, style):
-    if not GEMINI_API_KEY:
-        return {"error": "GEMINI API Anahtarı Tanımlı Değil. Render ortam değişkenlerini kontrol edin."}
+    access_token = get_access_token()
+    if not access_token:
+        return {"error": "Hata: Gemini Yetkilendirme Başarısız. JSON verinizi ve Google yetkilerini kontrol edin."}
     
-    # LLM'e gönderilecek talimat
     prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak YouTube için 3 adet kısa, viral başlık ve 1 adet 150 kelimelik ilgi çekici açıklama metni oluştur. Başlıkları madde madde ayır."
     
+    # API URL'si artık KEY yerine Service Account ile çalışıyor
     API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
     
     headers = {
         'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token}' # Erişim token'ı kullanılıyor
     }
-    params = {
-        'key': GEMINI_API_KEY
-    }
+
     payload = {
         'contents': [{'parts': [{'text': prompt}]}],
         'config': {
@@ -140,14 +168,13 @@ def generate_ai_content(topic, style):
     }
     
     try:
-        response = requests.post(API_URL, headers=headers, params=params, json=payload, timeout=30)
+        response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
         response.raise_for_status() 
         data = response.json()
         
         if data.get('candidates'):
             generated_text = data['candidates'][0]['content']['parts'][0]['text']
             
-            # Başlık ve açıklamayı ayırma
             parts = generated_text.split('\n')
             titles = [p.strip() for p in parts if p.strip() and p.strip().startswith(('1.', '2.', '3.', '-', '*'))]
             description = "\n".join([p for p in parts if not p.strip().startswith(('1.', '2.', '3.', '-', '*'))]).strip()
@@ -161,10 +188,9 @@ def generate_ai_content(topic, style):
         return {"error": "Yapay Zeka Metin Üretemedi (Boş Cevap)"}
 
     except requests.exceptions.RequestException as e:
-        return {"error": f"API Bağlantı Hatası: Kotanız veya anahtarınızı kontrol edin."}
+        return {"error": f"API Bağlantı Hatası: Kota/Faturalandırma Sorunu. Gemini panelinizi kontrol edin."}
     except Exception:
         return {"error": "Bir sorun oluştu. Lütfen girdilerinizi kontrol edin."}
-# ---------------------------------------------------------------------------------------------------
 
 
 def get_channel_data(query, lang_code='tr'):
@@ -317,7 +343,6 @@ def ai_generator():
             input_data = {'topic': topic, 'style': style}
 
     return render_template('ai_tool.html', ai_result=ai_result, input_data=input_data)
-
 
 @app.route('/gizlilik')
 def privacy(): return render_template('privacy.html', page_key='privacy')
