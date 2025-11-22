@@ -8,13 +8,11 @@ from datetime import datetime
 from collections import Counter
 
 app = Flask(__name__)
-# OTURUM (SESSION) İÇİN ÇOK GEREKLİ: LİMİT VE CAPTCHA BURADA SAKLANACAK.
-# Render'da "SECRET_KEY" ortam değişkeni ayarlanmalıdır!
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_change_me')
 
 # API Anahtarları
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY') # Groq Anahtarı
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY') 
 
 translations = {
     'tr': {
@@ -42,7 +40,6 @@ translations = {
         'daily_sub': 'Abone/Gün',
         'channel_type': 'Kanal Tipi',
         'consistency': 'İstikrar Durumu',
-        # --- YENİ ÇEVİRİLER ---
         'seo_score': 'SEO Skoru',
         'video_title_len': 'Başlık Uzunluğu',
         'video_tag_count': 'Etiket Sayısı',
@@ -51,20 +48,9 @@ translations = {
         'video_views': 'Görüntülenme',
         'video_likes': 'Beğenme',
         'video_comments': 'Yorum'
-        # --- BİTİŞ ---
     },
-    'en': { 
-        'title': 'YouTube Channel Auditor', 'error': 'Invalid Link', 'active': 'ACTIVE', 'passive': 'INACTIVE', 
-        'seo_score': 'SEO Score', 'video_views': 'Views', 'video_likes': 'Likes', 'video_comments': 'Comments',
-        'video_title_len': 'Title Length', 'video_tag_count': 'Tag Count', 'video_desc_len': 'Description Length',
-        'keyword_match': 'Tag/Title Match'
-    },
-    'de': { 
-        'title': 'YouTube-Kanal-Auditor', 'error': 'Ungültiger Link', 'active': 'AKTIV', 'passive': 'INAKTIV', 
-        'seo_score': 'SEO-Punktzahl', 'video_views': 'Aufrufe', 'video_likes': 'Likes', 'video_comments': 'Kommentare',
-        'video_title_len': 'Titellänge', 'video_tag_count': 'Tag-Anzahl', 'video_desc_len': 'Beschreibungslänge',
-        'keyword_match': 'Tag/Titel Übereinstimmung'
-    }
+    'en': { 'title': 'YouTube Channel Auditor', 'error': 'Invalid Link', 'active': 'ACTIVE', 'passive': 'INACTIVE' },
+    'de': { 'title': 'YouTube-Kanal-Auditor', 'error': 'Ungültiger Link', 'active': 'AKTIV', 'passive': 'INAKTIV' }
 }
 
 def format_number(num):
@@ -72,23 +58,9 @@ def format_number(num):
     if num > 1000: return f"{num/1000:.1f}K"
     return str(num)
 
-def get_country_multiplier(country_code):
-    high_cpm = ['US', 'GB', 'CA', 'AU', 'DE', 'CH', 'NO', 'SE']
-    mid_cpm = ['FR', 'IT', 'ES', 'NL', 'KR', 'JP', 'AE']
-    if country_code in high_cpm: return 3.0
-    if country_code in mid_cpm: return 1.5
-    return 0.8
-
-def calculate_age_stats(published_at):
-    try:
-        pub_date = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ")
-        now = datetime.now()
-        diff = now - pub_date
-        days_active = diff.days
-        years = days_active // 365
-        months = (days_active % 365) // 30
-        return f"{years} Yıl, {months} Ay", days_active
-    except: return "Bilinmiyor", 1
+def get_grade_value(grade):
+    grade_map = {'A+': 5, 'A': 4, 'B+': 3, 'B': 2, 'C': 1, 'D': 0}
+    return grade_map.get(grade, 0)
 
 def calculate_grade(sub_count, view_count, video_count):
     if sub_count == 0: return "D"
@@ -112,23 +84,24 @@ def parse_duration(duration_str):
     seconds = int(match.group(3)[:-1]) if match.group(3) else 0
     return (hours * 3600) + (minutes * 60) + seconds
 
-def check_real_monetization(channel_id):
-    url = f"https://www.youtube.com/channel/{channel_id}?hl=en"
+def get_country_multiplier(country_code):
+    high_cpm = ['US', 'GB', 'CA', 'AU', 'DE', 'CH', 'NO', 'SE']
+    if country_code in high_cpm: return 3.0
+    return 0.8
+
+def calculate_age_stats(published_at):
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cookie": "CONSENT=YES+cb.20210328-17-p0.en+FX+419; SOCS=CAISNQgDEitib3FfaWRlbnRpdHlmcm9udGVuZHVpc2VydmVyXzIwMjMwMTI0LjA2X3AxGgJlbiACGgYIgJ-NowY"
-        }
-        response = requests.get(url, headers=headers, timeout=5)
-        text = response.text
-        
-        if '"key":"is_monetization_enabled","value":"true"' in text: return True
-        if 'sponsorButtonRenderer' in text: return True
-        if 'merchandiseShelfRenderer' in text: return True
-        
-        return False
-    except: return False
+        pub_date = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ")
+        now = datetime.now()
+        diff = now - pub_date
+        days_active = diff.days
+        years = diff.days // 365
+        months = (diff.days % 365) // 30
+        return f"{years} Yıl, {months} Ay", days_active
+    except: return "Bilinmiyor", 1
+
+def check_real_monetization(channel_id):
+    return True 
 
 def extract_strict_link(query):
     id_match = re.search(r'(?:channel/|videos/|user/)?(UC[\w-]{21}[AQgw])', query)
@@ -137,99 +110,22 @@ def extract_strict_link(query):
     if handle_match: return 'forHandle', '@' + handle_match.group(1)
     return None, None
 
-# --- YENİ FONKSİYON: VİDEO ID ÇEKME ---
 def extract_video_id(query):
-    # Standart YouTube URL veya kısa ID
     match = re.search(r'(?:youtu\.be\/|v=|embed\/)([\w-]{11})', query)
     if match: return match.group(1)
-    # Eğer kullanıcı sadece ID girerse
     if re.match(r'^[\w-]{11}$', query): return query
     return None
-# ----------------------------------------
 
-# --- YENİ FONKSİYON: VİDEO SEO SKORU HESAPLAMA ---
-def get_video_data(video_id, lang_code='tr'):
-    if not YOUTUBE_API_KEY: return None
-
-    # Video detaylarını, istatistiklerini ve içerik detaylarını çek
-    video_url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id={video_id}&key={YOUTUBE_API_KEY}"
-    video_res = requests.get(video_url).json()
-
-    if 'items' not in video_res or not video_res['items']: return None
-    
-    item = video_res['items'][0]
-    snippet = item['snippet']
-    stats = item['statistics']
-
-    title = snippet.get('title', '')
-    description = snippet.get('description', '')
-    tags = snippet.get('tags', [])
-    view_count = int(stats.get('viewCount', 0))
-    # Beğeni ve yorum sayısı bazen API'da olmayabilir
-    like_count = int(stats.get('likeCount', 0))
-    comment_count = int(stats.get('commentCount', 0))
-
-    # --- SEO Skor Hesaplama Mantığı (Basitleştirilmiş) ---
-    score = 0
-    
-    # 1. Başlık Uzunluğu (Max 60-70 karakter ideal)
-    title_len = len(title)
-    if 40 <= title_len <= 70: score += 20 
-    elif 30 <= title_len <= 80: score += 10
-    
-    # 2. Etiket Sayısı (Optimal: 10-15 etiket)
-    tag_count = len(tags)
-    if 10 <= tag_count <= 15: score += 30
-    elif 5 <= tag_count <= 20: score += 20
-    elif tag_count > 0: score += 10 # En azından etiket var
-    
-    # 3. Açıklama Uzunluğu (Optimal: > 100 karakter, anahtar kelimeler içeriyorsa)
-    desc_len = len(description)
-    if desc_len >= 150: score += 20
-    elif desc_len >= 50: score += 10
-    
-    # 4. Etiketlerin Başlık/Açıklamada Kullanımı (Keyword Match)
-    keywords_in_title_desc = 0
-    for tag in tags:
-        if tag.lower() in title.lower() or tag.lower() in description.lower():
-            keywords_in_title_desc += 1
-    
-    if keywords_in_title_desc >= 3: score += 30
-    elif keywords_in_title_desc >= 1: score += 15
-
-    # Final score'u 100'ü geçmeyecek şekilde sınırla
-    final_score = min(score, 100) 
-    
-    engagement = (like_count + comment_count) / view_count * 100 if view_count > 0 else 0
-
-    return {
-        'title': title,
-        'channel_title': snippet.get('channelTitle', 'N/A'),
-        'thumbnail': snippet['thumbnails']['high']['url'],
-        'tags': tags,
-        'view_count': format_number(view_count),
-        'like_count': format_number(like_count),
-        'comment_count': format_number(comment_count),
-        'engagement': f"{engagement:.2f}%",
-        'seo_score': final_score,
-        'title_len': title_len,
-        'tag_count': tag_count,
-        'desc_len': desc_len,
-        'keyword_match': keywords_in_title_desc
-    }
-# ---------------------------------------------------------------------------------------------------
-
-
-# --- GROQ API İLE İÇERİK OLUŞTURMA (Llama 3.1) ---
+# --- GROQ API İLE İÇERİK OLUŞTURMA (DÜZELTİLMİŞ PARSING) ---
 def generate_ai_content(topic, style):
     if not GROQ_API_KEY:
         return {"error": "GROQ_API_KEY Render'da tanımlı değil."}
     
     API_URL = "https://api.groq.com/openai/v1/chat/completions"
     
-    # SEO ve Kısa Açıklama Odaklı Prompt
-    system_prompt = "Sen, YouTube içerik üreticileri için optimize, SEO uyumlu başlık ve açıklama üreten profesyonel bir uzmansın. Cevabını sadece istenen metinle sınırla."
-    user_prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak Türkçe, çok yaratıcı, 3 adet SEO uyumlu viral başlık ve 1 adet kısa (~50 kelimelik) profesyonel açıklama metni oluştur. Başlıkları mutlaka ayrı bir satırda numaralandır."
+    system_prompt = "Sen, profesyonel bir YouTube SEO uzmanısın. Cevabını kesinlikle şu formatta ver:\nBAŞLIKLAR:\n1. Başlık\n2. Başlık\n3. Başlık\n\nAÇIKLAMA:\n(Buraya açıklama metni gelecek)"
+    
+    user_prompt = f"Konu: {topic}. Stil: {style}. Türkçe, 3 viral başlık ve 50-60 kelimelik profesyonel açıklama yaz."
 
     headers = {
         'Content-Type': 'application/json',
@@ -242,8 +138,8 @@ def generate_ai_content(topic, style):
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
-        "temperature": 0.8,
-        "max_tokens": 700
+        "temperature": 0.7,
+        "max_tokens": 800
     }
     
     try:
@@ -254,13 +150,24 @@ def generate_ai_content(topic, style):
         if data.get('choices'):
             generated_text = data['choices'][0]['message']['content']
             
-            parts = generated_text.split('\n')
-            titles = [p.strip() for p in parts if p.strip() and p.strip().startswith(('1.', '2.', '3.', '-', '*'))]
-            description = "\n".join([p for p in parts if not p.strip().startswith(('1.', '2.', '3.', '-', '*'))]).strip()
-
+            # YENİ PARSING MANTIĞI: Anahtar kelimelerle böl
+            titles = []
+            description = "Açıklama oluşturulamadı."
+            
+            if "AÇIKLAMA:" in generated_text:
+                parts = generated_text.split("AÇIKLAMA:")
+                titles_part = parts[0].replace("BAŞLIKLAR:", "").strip()
+                description = parts[1].strip()
+                
+                # Başlıkları satır satır al
+                titles = [t.strip() for t in titles_part.split('\n') if t.strip()]
+            else:
+                # Yedek plan (Eski usul)
+                description = generated_text
+            
             return {
                 "titles": titles[:3],
-                "description": description if description else generated_text,
+                "description": description,
                 "raw": generated_text
             }
 
@@ -270,15 +177,56 @@ def generate_ai_content(topic, style):
         return {"error": f"API Bağlantı Hatası: Groq Kota/Faturalandırma Sorunu."}
     except Exception:
         return {"error": "Bir sorun oluştu. Lütfen girdilerinizi kontrol edin."}
-# ---------------------------------------------------------------------------------------------------
 
+def get_video_data(video_id, lang_code='tr'):
+    if not YOUTUBE_API_KEY: return None
+    video_url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id={video_id}&key={YOUTUBE_API_KEY}"
+    video_res = requests.get(video_url).json()
+    if 'items' not in video_res or not video_res['items']: return None
+    item = video_res['items'][0]
+    snippet = item['snippet']
+    stats = item['statistics']
+    title = snippet.get('title', '')
+    description = snippet.get('description', '')
+    tags = snippet.get('tags', [])
+    view_count = int(stats.get('viewCount', 0))
+    like_count = int(stats.get('likeCount', 0))
+    comment_count = int(stats.get('commentCount', 0))
+    score = 0
+    title_len = len(title)
+    if 40 <= title_len <= 70: score += 20 
+    elif 30 <= title_len <= 80: score += 10
+    tag_count = len(tags)
+    if 10 <= tag_count <= 15: score += 30
+    elif 5 <= tag_count <= 20: score += 20
+    elif tag_count > 0: score += 10
+    desc_len = len(description)
+    if desc_len >= 150: score += 20
+    elif desc_len >= 50: score += 10
+    keywords_in_title_desc = 0
+    for tag in tags:
+        if tag.lower() in title.lower() or tag.lower() in description.lower():
+            keywords_in_title_desc += 1
+    if keywords_in_title_desc >= 3: score += 30
+    elif keywords_in_title_desc >= 1: score += 15
+    final_score = min(score, 100) 
+    engagement = (like_count + comment_count) / view_count * 100 if view_count > 0 else 0
+    status_label = "Mükemmel" if final_score >= 80 else "İyi" if final_score >= 50 else "Geliştirilmeli"
+    recommendation_text = ""
+    if title_len < 40 or title_len > 70: recommendation_text += "Başlık uzunluğunu 40-70 karakter yapın. "
+    if tag_count < 10: recommendation_text += "Daha fazla etiket ekleyin. "
+    return {
+        'title': title, 'channel_title': snippet.get('channelTitle', 'N/A'), 'thumbnail': snippet['thumbnails']['high']['url'],
+        'tags': tags, 'view_count': format_number(view_count), 'like_count': format_number(like_count),
+        'comment_count': format_number(comment_count), 'engagement': f"{engagement:.2f}%", 'seo_score': final_score,
+        'status': status_label, 'recommendation': recommendation_text or "Harika iş!", 'title_len': title_len,
+        'tag_count': tag_count, 'desc_len': desc_len, 'keyword_match': keywords_in_title_desc
+    }
 
 def get_channel_data(query, lang_code='tr'):
     if not YOUTUBE_API_KEY: return None 
-
     query_type, query_value = extract_strict_link(query)
     if not query_type: return None 
-    
     channel_id = None
     if query_type == 'id': channel_id = query_value
     elif query_type == 'forHandle':
@@ -286,62 +234,43 @@ def get_channel_data(query, lang_code='tr'):
         stats_res = requests.get(stats_url).json()
         if stats_res.get('items'): channel_id = stats_res['items'][0]['id']
         else: return None
-
     if not channel_id: return None
-
     stats_url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet,contentDetails,brandingSettings&id={channel_id}&key={YOUTUBE_API_KEY}"
     stats_res = requests.get(stats_url).json()
     if 'items' not in stats_res: return None
-
     info = stats_res['items'][0]
     stats = info['statistics']
     snippet = info['snippet']
-
     sub_count = int(stats.get('subscriberCount', 0))
     view_count = int(stats.get('viewCount', 0))
     video_count = int(stats.get('videoCount', 0))
-    
     country_code = snippet.get('country', 'TR')
     age_str, days_active = calculate_age_stats(snippet.get('publishedAt', ''))
-    daily_subs = int(sub_count / days_active) if days_active > 0 else 0
-    
+    daily_subs_raw = int(sub_count / days_active) if days_active > 0 else 0
+    daily_subs_formatted = format_number(daily_subs_raw)
     keywords = []
     if 'brandingSettings' in info and 'channel' in info['brandingSettings']:
         keys = info['brandingSettings']['channel'].get('keywords', '')
         if keys: keywords = [k.replace('"', '') for k in keys.split(' ')[:10]]
-
     uploads_id = info['contentDetails']['relatedPlaylists']['uploads']
     videos_url = f"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId={uploads_id}&maxResults=10&key={YOUTUBE_API_KEY}"
     videos_res = requests.get(videos_url).json()
-
     playlist_total = videos_res.get('pageInfo', {}).get('totalResults', 0)
     hidden_videos = max(0, playlist_total - video_count)
-
     videos = []
     upload_hours = []
-    
     shorts_count = 0
     long_videos_count = 0
-    
     for item in videos_res.get('items', []):
         pub_time = item['snippet']['publishedAt']
         dt = datetime.strptime(pub_time, "%Y-%m-%dT%H:%M:%SZ")
         upload_hours.append(dt.hour)
-        
         duration_str = item['contentDetails'].get('duration', 'PT0S')
         seconds = parse_duration(duration_str)
-        
         if seconds <= 60: shorts_count += 1
         else: long_videos_count += 1
-
         if len(videos) < 3:
-            videos.append({
-                'title': item['snippet']['title'],
-                'thumb': item['snippet']['thumbnails']['high']['url'],
-                'id': item['snippet']['resourceId']['videoId'],
-                'published': dt.strftime("%d.%m.%Y")
-            })
-
+            videos.append({ 'title': item['snippet']['title'], 'thumb': item['snippet']['thumbnails']['high']['url'], 'id': item['snippet']['resourceId']['videoId'], 'published': dt.strftime("%d.%m.%Y") })
     total_analyzed = shorts_count + long_videos_count
     channel_type_label = "Belirsiz"
     if total_analyzed > 0:
@@ -349,43 +278,32 @@ def get_channel_data(query, lang_code='tr'):
         if shorts_ratio > 60: channel_type_label = "Shorts Ağırlıklı 📱"
         elif shorts_ratio < 20: channel_type_label = "Uzun Video 🎥"
         else: channel_type_label = "Karışık / Dengeli ⚖️"
-    
     consistency_label = "Stabil"
-    if daily_subs > 500: consistency_label = "Yükselişte 🚀"
+    if daily_subs_raw > 500: consistency_label = "Yükselişte 🚀"
     consistency_data = {'label': consistency_label}
-    
     peak_hour_str = "Belirsiz"
     if upload_hours:
         common_hour = Counter(upload_hours).most_common(1)[0][0]
         tr_hour = (common_hour + 3) % 24
         peak_hour_str = f"{tr_hour}:00 - {tr_hour+1}:00 (TR)"
-    
     base_cpm, niche_name = get_niche_cpm(keywords, snippet['title'], snippet['description'])
     country_multiplier = get_country_multiplier(country_code)
     final_cpm = base_cpm * country_multiplier
     est_monthly_views = view_count * 0.03 
     monthly_rev = (est_monthly_views / 1000) * final_cpm
-    
-    is_monetized = False
-    if sub_count >= 1000:
-        scraping_result = check_real_monetization(channel_id)
-        if scraping_result: is_monetized = True
-        else:
-            if sub_count > 5000 and view_count > 500000: is_monetized = True
-            else: is_monetized = False
-    
+    is_monetized = sub_count >= 1000 and view_count > 4000
     earnings_str = f"${monthly_rev * 0.8:,.0f} - ${monthly_rev * 1.2:,.0f}" if is_monetized else "$0"
     status_key = 'active' if is_monetized else 'passive'
     warning_text = translations[lang_code]['warn_monetization'] if not is_monetized else ""
     grade = calculate_grade(sub_count, view_count, video_count)
-
     return {
         'title': snippet['title'], 'desc': snippet['description'][:100], 'avatar': snippet['thumbnails']['medium']['url'],
         'sub_count': format_number(sub_count), 'view_count': format_number(view_count), 'video_count': format_number(video_count),
         'grade': grade, 'niche': niche_name, 'upload_schedule': peak_hour_str, 'tags': keywords,
         'monetized': is_monetized, 'status_key': status_key, 'warning_text': warning_text, 'earnings': earnings_str,
-        'videos': videos, 'country': country_code, 'age': age_str, 'daily_subs': daily_subs, 'channel_type': channel_type_label,
-        'hidden_videos': hidden_videos, 'consistency': consistency_data, 'id': channel_id # Kanal ID'si karşılaştırma için eklendi
+        'videos': videos, 'country': country_code, 'age': age_str, 
+        'daily_subs': daily_subs_formatted, 'channel_type': channel_type_label, 'hidden_videos': hidden_videos, 'consistency': consistency_data,
+        'raw_sub_count': sub_count, 'raw_view_count': view_count, 'raw_video_count': video_count, 'raw_daily_subs': daily_subs_raw, 'raw_earnings_high': monthly_rev * 1.2, 'raw_grade_val': get_grade_value(grade), 'name': snippet['title'], 'avatar': snippet['thumbnails']['medium']['url'] 
     }
 
 @app.route('/', methods=['GET', 'POST'])
@@ -395,130 +313,79 @@ def index():
     content = translations[lang]
     result = None
     error = None
-
     if request.method == 'POST':
         query = request.form.get('query')
         if query:
             try:
                 result = get_channel_data(query, lang)
                 if not result: error = content['error']
-            except Exception as e:
-                print(f"Hata: {e}")
-                error = "Sunucu hatası oluştu."
-
+            except Exception as e: error = "Sunucu hatası."
     return render_template('index.html', content=content, current_lang=lang, result=result, error=error)
+
+@app.route('/araclar/kanal-karsilastir', methods=['GET', 'POST'])
+def channel_vs():
+    results = {}
+    error = None
+    lang = request.args.get('lang', 'tr')
+    content = translations.get(lang, translations['tr'])
+    input_data = {'query1': '', 'query2': ''}
+    if request.method == 'POST':
+        query1 = request.form.get('query1')
+        query2 = request.form.get('query2')
+        input_data = {'query1': query1, 'query2': query2}
+        try:
+            data1 = get_channel_data(query1, lang)
+            data2 = get_channel_data(query2, lang)
+            if not data1 or not data2: error = f"Veri alınamadı."
+            else:
+                results = { 'name1': data1['title'], 'name2': data2['title'], 'subs1': data1['sub_count'], 'subs2': data2['sub_count'], 'views1': data1['view_count'], 'views2': data2['view_count'], 'videos1': data1['video_count'], 'videos2': data2['video_count'], 'grade1': data1['grade'], 'grade2': data2['grade'], 'daily_subs1': data1['daily_subs'], 'daily_subs2': data2['daily_subs'], 'earnings1': data1['earnings'], 'earnings2': data2['earnings'], 'country1': data1['country'], 'country2': data2['country'], 'avatar1': data1['avatar'], 'avatar2': data2['avatar'] }
+        except Exception: error = "Kıyaslama hatası."
+    return render_template('channel_vs.html', content=content, result=results, error=error, input_data=input_data, current_lang=lang)
 
 @app.route('/araclar/ai-baslik', methods=['GET', 'POST'])
 def ai_generator():
     ai_result = None
     input_data = {}
     error_message = None
-    
-    # KULLANIM LİMİTİ AYARLARI
     MAX_USES = 5
-    if 'ai_uses' not in session:
-        session['ai_uses'] = 0
-
+    if 'ai_uses' not in session: session['ai_uses'] = 0
     if request.method == 'POST':
         topic = request.form.get('topic')
         style = request.form.get('style')
-        
-        # CAPTCHA KONTROLÜ
         captcha_check = request.form.get('captcha_check')
         captcha_result = session.pop('captcha_result', None) 
-        
-        # HATA KONTROLLERİ
-        if not topic or not style:
-            error_message = "Lütfen tüm alanları doldurun."
-        elif captcha_result is None or str(captcha_result) != captcha_check:
-            error_message = "CAPTCHA doğrulamasını yanlış yaptınız veya süresi doldu. Tekrar deneyin."
-        elif session['ai_uses'] >= MAX_USES:
-            error_message = f"Kullanım limitinizi ({MAX_USES} hak) doldurdunuz. Lütfen tarayıcı çerezlerinizi silin veya daha sonra tekrar deneyin."
+        if not topic or not style: error_message = "Eksik bilgi."
+        elif captcha_result is None or str(captcha_result) != captcha_check: error_message = "Hatalı CAPTCHA."
+        elif session['ai_uses'] >= MAX_USES: error_message = "Limit doldu."
         else:
-            if topic and style:
-                ai_result = generate_ai_content(topic, style)
-                input_data = {'topic': topic, 'style': style}
-                
-                if 'error' not in ai_result:
-                    session['ai_uses'] += 1
-                else:
-                    error_message = ai_result['error'] 
-
-    # YENİ CAPTCHA OLUŞTURMA
+            ai_result = generate_ai_content(topic, style)
+            input_data = {'topic': topic, 'style': style}
+            if 'error' not in ai_result: session['ai_uses'] += 1
+            else: error_message = ai_result['error'] 
     num1 = random.randint(1, 10)
     num2 = random.randint(1, 10)
     captcha_question = f"{num1} + {num2} = ?"
     session['captcha_result'] = num1 + num2 
-    
-    # Kalan hakkı hesapla
     uses_left = MAX_USES - session.get('ai_uses', 0)
     content = translations.get(request.args.get('lang', 'tr'), translations['tr'])
+    return render_template('ai_tool.html', content=content, ai_result=ai_result, input_data=input_data, error=error_message, captcha_question=captcha_question, uses_left=uses_left, max_uses=MAX_USES, current_lang=request.args.get('lang', 'tr'))
 
-
-    return render_template('ai_tool.html', content=content, ai_result=ai_result, input_data=input_data, error=error_message, 
-                           captcha_question=captcha_question, uses_left=uses_left, max_uses=MAX_USES, current_lang=request.args.get('lang', 'tr'))
-
-# --- YENİ ROTA: KANAL KIYASLAMA ---
-@app.route('/araclar/kanal-karsilastir', methods=['GET', 'POST'])
-def channel_vs():
-    results = {}
-    error = None
-    
-    lang = request.args.get('lang', 'tr')
-    content = translations.get(lang, translations['tr'])
-
-    if request.method == 'POST':
-        query1 = request.form.get('query1')
-        query2 = request.form.get('query2')
-
-        try:
-            # Kanal 1
-            result1 = get_channel_data(query1, lang)
-            if not result1:
-                error = f"Kanal 1 için hata: {content['error']}"
-            else:
-                results['channel1'] = result1
-            
-            # Kanal 2
-            result2 = get_channel_data(query2, lang)
-            if not result2:
-                error = f"Kanal 2 için hata: {content['error']}"
-            else:
-                results['channel2'] = result2
-            
-            if 'channel1' in results and 'channel2' in results:
-                error = None # Hata yok, başarılı
-                
-        except Exception:
-            error = "Sunucu hatası oluştu. Lütfen linkleri kontrol edin."
-
-    return render_template('channel_vs.html', content=content, results=results, error=error, current_lang=lang)
-    
-# --- YENİ ROTA: VİDEO SEO SKORU ---
 @app.route('/araclar/video-seo', methods=['GET', 'POST'])
 def video_seo():
     result = None
     error = None
-    
     lang = request.args.get('lang', 'tr')
     content = translations.get(lang, translations['tr'])
-
     if request.method == 'POST':
         query = request.form.get('query')
         video_id = extract_video_id(query)
-        
-        if not video_id:
-            error = "Lütfen geçerli bir YouTube Video Linki veya ID'si girin."
+        if not video_id: error = "Geçersiz video linki."
         else:
             try:
                 result = get_video_data(video_id, lang)
-                if not result:
-                    error = "Video bilgisi alınamadı. Lütfen ID'yi kontrol edin."
-            except Exception:
-                error = "Sunucu hatası oluştu."
-
+                if not result: error = "Video verisi alınamadı."
+            except Exception: error = "Sunucu hatası."
     return render_template('video_seo.html', content=content, result=result, error=error, current_lang=lang)
-# -----------------------------------
 
 @app.route('/gizlilik')
 def privacy(): return render_template('privacy.html', page_key='privacy')
@@ -532,3 +399,5 @@ def contact(): return render_template('privacy.html', page_key='contact')
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
+
