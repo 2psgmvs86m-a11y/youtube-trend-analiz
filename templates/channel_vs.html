@@ -1,59 +1,34 @@
 <!DOCTYPE html>
-<html lang="{{ current_lang }}">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanal Kıyaslama - YT Audit</title>
-    <!-- Ana Sayfa Kütüphaneleri -->
+    <title>Kanal Kıyaslama</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        /* --- ANA TEMA (index.html ile aynı) --- */
-        :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; --win-color: #10b981; --lose-color: #ef4444; }
+        :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
         body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
-        h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
-        p, span, div, li, label { color: #e2e8f0; }
-        .text-muted { color: #94a3b8 !important; opacity: 0.8 !important; }
-
-        /* NAVBAR */
+        h1, h2, h3 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
-        .nav-link { color: #e2e8f0 !important; font-weight: 500; transition: color 0.3s; }
-        .nav-link:hover { color: var(--accent) !important; }
-
-        /* KIYASLAMA ALANI */
-        .hero { padding: 50px 0; flex: 1; }
-        .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 16px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
-
-        /* INPUTLAR */
-        .search-input { background: #0d1117 !important; border: 1px solid #30363d !important; color: white !important; padding: 12px; border-radius: 8px; }
-        .search-input::placeholder { color: #6b7280 !important; }
-        .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 12px 20px; border-radius: 8px; width: 100%; transition: 0.3s; }
-        .btn-audit:hover { background: #c51c21; }
-
-        /* VS KARTLARI (Premium Tasarım) */
-        .vs-header { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 40px; position: relative; }
-        .channel-profile { text-align: center; flex: 1; }
-        .channel-avatar { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--card-bg); box-shadow: 0 0 20px rgba(255,255,255,0.1); object-fit: cover; }
-        .vs-badge { background: var(--accent); color: white; font-weight: 900; font-size: 1.5rem; padding: 10px 20px; border-radius: 50px; z-index: 2; box-shadow: 0 0 15px rgba(230, 36, 41, 0.5); }
+        .nav-link { color: #e2e8f0 !important; font-weight: 500; } .nav-link:hover { color: var(--accent) !important; }
+        .hero { padding: 60px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); flex: 1; }
+        .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 30px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 6px; }
+        .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 12px 20px; border-radius: 6px; width: 100%; }
         
-        /* İSTATİSTİK BARLARI */
-        .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #2d333b; }
-        .stat-row:last-child { border-bottom: none; }
-        .stat-val { font-weight: 700; font-size: 1.1rem; flex: 1; text-align: center; }
-        .stat-label { flex: 1; text-align: center; color: #94a3b8; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .comparison-table { width: 100%; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; margin-top: 30px; }
+        .comparison-table th, .comparison-table td { padding: 15px; text-align: center; border-bottom: 1px solid #30363d; color: white; }
+        .comparison-table th { background-color: #0d1117; font-weight: 600; }
+        .winner { color: #10b981; font-weight: bold; }
+        .channel-info { background-color: #21262d; font-weight: bold;}
         
-        .winner-text { color: var(--win-color); text-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
-        .loser-text { color: #6b7280; opacity: 0.7; }
-
         footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
         .footer-link { color: #8b949e; margin: 0 10px; text-decoration: none; }
     </style>
 </head>
 <body>
-
-    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand fw-bold text-white" href="/"><i class="fas fa-chart-pie text-danger"></i> YT<span class="text-white">AUDIT</span></a>
@@ -61,11 +36,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="/">Ana Sayfa</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/hakkimizda">Hakkımızda</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/iletisim">İletişim</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Araçlar</a>
-                        <ul class="dropdown-menu dropdown-menu-dark" style="background: #161b22;">
+                        <ul class="dropdown-menu dropdown-menu-dark">
                             <li><a class="dropdown-item" href="/araclar/ai-baslik">AI Başlık Oluşturucu</a></li>
                             <li><a class="dropdown-item" href="/araclar/kanal-karsilastir">Kanal Kıyaslama</a></li>
                             <li><a class="dropdown-item" href="/araclar/video-seo">Video SEO Skoru</a></li>
@@ -80,104 +53,59 @@
         <div class="container" style="max-width: 900px;">
             <div class="glass-card">
                 <h1 class="text-center mb-4">Kanal Kıyaslama</h1>
-                <p class="text-center text-muted mb-5">İki dev kanalı ringe çıkarın. Hangisi daha iyi?</p>
-
-                <!-- ARAMA FORMU -->
-                <form method="POST" class="row g-3 mb-5">
+                <form method="POST" class="row g-3">
                     <div class="col-md-5">
-                        <input type="text" name="query1" class="form-control search-input" placeholder="1. Kanal Linki" value="{{ input_data.query1 or '' }}" required>
-                    </div>
-                    <div class="col-md-2 text-center d-none d-md-block">
-                        <span class="vs-badge" style="font-size: 1rem; padding: 8px 15px;">VS</span>
+                        <input type="text" name="query1" class="form-control search-input" placeholder="1. Kanal Linki" required value="{{ input_data.query1 or '' }}">
                     </div>
                     <div class="col-md-5">
-                        <input type="text" name="query2" class="form-control search-input" placeholder="2. Kanal Linki" value="{{ input_data.query2 or '' }}" required>
+                        <input type="text" name="query2" class="form-control search-input" placeholder="2. Kanal Linki" required value="{{ input_data.query2 or '' }}">
                     </div>
-                    <div class="col-12 mt-3">
-                        <button class="btn btn-audit" type="submit">KARŞILAŞTIR</button>
+                    <div class="col-md-2">
+                        <button class="btn btn-audit" type="submit">KIYASLA</button>
                     </div>
                 </form>
 
                 {% if error %}
-                    <div class="alert alert-danger text-center" style="background: #450a0a; border: 1px solid #ef4444; color: #ef4444;">{{ error }}</div>
+                    <div class="alert alert-danger mt-3">{{ error }}</div>
                 {% endif %}
 
                 {% if result %}
-                    <!-- VS KARTLARI -->
-                    <div class="vs-header mt-5">
-                        <!-- KANAL 1 -->
-                        <div class="channel-profile">
-                            <img src="{{ result.avatar1 }}" class="channel-avatar mb-3">
-                            <h4 class="text-white">{{ result.name1 }}</h4>
-                            <div class="badge bg-dark text-light border border-secondary">{{ result.country1 }}</div>
+                    <div class="row justify-content-center mt-4 mb-4">
+                        <div class="col-5 text-center">
+                            <img src="{{ result.avatar1 }}" style="width:80px; border-radius:50%; border:2px solid #30363d;">
                         </div>
-
-                        <!-- VS BADGE -->
-                        <div class="vs-badge">VS</div>
-
-                        <!-- KANAL 2 -->
-                        <div class="channel-profile">
-                            <img src="{{ result.avatar2 }}" class="channel-avatar mb-3">
-                            <h4 class="text-white">{{ result.name2 }}</h4>
-                            <div class="badge bg-dark text-light border border-secondary">{{ result.country2 }}</div>
+                        <div class="col-2 text-center align-self-center fw-bold text-danger">VS</div>
+                        <div class="col-5 text-center">
+                            <img src="{{ result.avatar2 }}" style="width:80px; border-radius:50%; border:2px solid #30363d;">
                         </div>
                     </div>
 
-                    <!-- İSTATİSTİK TABLOSU (MODERN) -->
-                    <div class="stats-container">
-                        
-                        <!-- ABONE -->
-                        <div class="stat-row">
-                            <div class="stat-val {% if result.raw_subs1 > result.raw_subs2 %}winner-text{% else %}loser-text{% endif %}">
-                                {{ result.subs1 }}
-                            </div>
-                            <div class="stat-label">ABONE</div>
-                            <div class="stat-val {% if result.raw_subs2 > result.raw_subs1 %}winner-text{% else %}loser-text{% endif %}">
-                                {{ result.subs2 }}
-                            </div>
-                        </div>
-
-                        <!-- İZLENME -->
-                        <div class="stat-row">
-                            <div class="stat-val {% if result.raw_view_count > result.raw_view_count_2 %}winner-text{% else %}loser-text{% endif %}">
-                                {{ result.views1 }}
-                            </div>
-                            <div class="stat-label">İZLENME</div>
-                            <div class="stat-val {% if result.raw_view_count_2 > result.raw_view_count %}winner-text{% else %}loser-text{% endif %}">
-                                {{ result.views2 }}
-                            </div>
-                        </div>
-
-                        <!-- VİDEO SAYISI -->
-                        <div class="stat-row">
-                            <div class="stat-val text-white">{{ result.videos1 }}</div>
-                            <div class="stat-label">VİDEO</div>
-                            <div class="stat-val text-white">{{ result.videos2 }}</div>
-                        </div>
-
-                        <!-- NOT -->
-                        <div class="stat-row">
-                            <div class="stat-val {% if result.raw_grade_val > result.raw_grade_val_2 %}winner-text{% else %}text-white{% endif %}">
-                                {{ result.grade1 }}
-                            </div>
-                            <div class="stat-label">KALİTE NOTU</div>
-                            <div class="stat-val {% if result.raw_grade_val_2 > result.raw_grade_val %}winner-text{% else %}text-white{% endif %}">
-                                {{ result.grade2 }}
-                            </div>
-                        </div>
-
-                        <!-- KAZANÇ -->
-                        <div class="stat-row" style="border-bottom: none;">
-                            <div class="stat-val {% if result.raw_earnings_high > result.raw_earnings_high_2 %}winner-text{% else %}text-white{% endif %}">
-                                {{ result.earnings1 }}
-                            </div>
-                            <div class="stat-label">TAHMİNİ GELİR</div>
-                            <div class="stat-val {% if result.raw_earnings_high_2 > result.raw_earnings_high %}winner-text{% else %}text-white{% endif %}">
-                                {{ result.earnings2 }}
-                            </div>
-                        </div>
-
-                    </div>
+                    <table class="comparison-table">
+                        <thead><tr><th>Özellik</th><th>{{ result.name1 }}</th><th>{{ result.name2 }}</th></tr></thead>
+                        <tbody>
+                            <tr><td>Abone</td>
+                                <td class="{% if result.raw_subs1 > result.raw_subs2 %}winner{% endif %}">{{ result.subs1 }}</td>
+                                <td class="{% if result.raw_subs2 > result.raw_subs1 %}winner{% endif %}">{{ result.subs2 }}</td>
+                            </tr>
+                            <tr><td>İzlenme</td>
+                                <td class="{% if result.raw_views1 > result.raw_views2 %}winner{% endif %}">{{ result.views1 }}</td>
+                                <td class="{% if result.raw_views2 > result.raw_views1 %}winner{% endif %}">{{ result.views2 }}</td>
+                            </tr>
+                            <tr><td>Video Sayısı</td>
+                                <td class="{% if result.raw_videos1 > result.raw_videos2 %}winner{% endif %}">{{ result.videos1 }}</td>
+                                <td class="{% if result.raw_videos2 > result.raw_videos1 %}winner{% endif %}">{{ result.videos2 }}</td>
+                            </tr>
+                            <tr><td>Not</td>
+                                <td class="{% if result.raw_grade1 > result.raw_grade2 %}winner{% endif %}">{{ result.grade1 }}</td>
+                                <td class="{% if result.raw_grade2 > result.raw_grade1 %}winner{% endif %}">{{ result.grade2 }}</td>
+                            </tr>
+                            <tr><td>Tahmini Gelir</td>
+                                <td class="{% if result.raw_earnings1 > result.raw_earnings2 %}winner{% endif %}">{{ result.earnings1 }}</td>
+                                <td class="{% if result.raw_earnings2 > result.raw_earnings1 %}winner{% endif %}">{{ result.earnings2 }}</td>
+                            </tr>
+                            <tr><td>Ülke</td><td>{{ result.country1 }}</td><td>{{ result.country2 }}</td></tr>
+                        </tbody>
+                    </table>
                 {% endif %}
             </div>
         </div>
@@ -189,6 +117,7 @@
             <p class="text-muted small mt-2">&copy; 2025 YT Audit.</p>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
