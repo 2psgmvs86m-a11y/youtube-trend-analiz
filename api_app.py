@@ -80,7 +80,6 @@ def get_niche_cpm(tags, title, desc):
     if "finance" in full_text or "para" in full_text: return 8.00, "Finans"
     return 2.00, "Genel"
 
-# --- PROXY YOK - SCRAPING + GÜVENLİK AĞI ---
 def check_real_monetization(channel_id):
     url = f"https://www.youtube.com/channel/{channel_id}?hl=en"
     try:
@@ -180,17 +179,12 @@ def get_channel_data(query, lang_code='tr'):
     est_monthly_views = view_count * 0.03 
     monthly_rev = (est_monthly_views / 1000) * final_cpm
     
-    # --- MONETIZATION KONTROLÜ (HİBRİT) ---
     is_monetized = False
     if sub_count >= 1000:
-        # 1. Önce Scraping Dene
         scraping_result = check_real_monetization(channel_id)
-        
         if scraping_result:
             is_monetized = True
         else:
-            # 2. Scraping başarısızsa (Render IP engellendiyse)
-            # Kanal büyükse "Kesin Açıktır" varsayımı yap (Güvenlik Ağı)
             if sub_count > 5000 and view_count > 500000:
                 is_monetized = True
             else:
@@ -244,6 +238,20 @@ def index():
                 error = "API Hatası"
 
     return render_template('index.html', content=content, current_lang=lang, result=result, error=error)
+
+# --- YENİ MENÜ İÇİN ROTALAR (privacy.html KULLANIYOR) ---
+@app.route('/gizlilik')
+def privacy(): return render_template('privacy.html', page_key='privacy')
+
+@app.route('/kullanim')
+def terms(): return render_template('privacy.html', page_key='terms')
+
+@app.route('/hakkimizda')
+def about(): return render_template('privacy.html', page_key='about')
+
+@app.route('/iletisim')
+def contact(): return render_template('privacy.html', page_key='contact')
+# --------------------------------------------------------
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
