@@ -14,31 +14,31 @@
         h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
         p, span, div, li { color: #e2e8f0; }
         .text-muted { color: #94a3b8 !important; opacity: 0.8 !important; }
-
+        
+        /* NAVBAR VE TEMA STİLİ */
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
         .nav-link { color: #e2e8f0 !important; font-weight: 500; transition: color 0.3s; }
         .nav-link:hover { color: var(--accent) !important; }
         
-        .main-container { 
-            max-width: 800px; 
+        .main-content-area { 
+            max-width: 700px; /* Merkeze çekmek için */
             margin: 50px auto; 
-            padding: 30px; 
-            /* ANA SAYFADAKİ GLASS-CARD STİLİNİ UYGULAYALIM */
+            /* ANASAYFADAKİ GLASS-CARD STİLİ */
             background: var(--card-bg); 
             border: 1px solid #30363d; 
             border-radius: 12px; 
+            padding: 30px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
             flex: 1;
         }
 
-        /* FORM ALANLARI ANA SAYFA GİBİ SİYAH OLMALI */
+        /* FORM ALANLARI ANA SAYFA GİBİ */
         .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 6px; }
         .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
         
+        /* BUTON ANASAYFA İLE AYNI */
         .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 12px 20px; border-radius: 6px; transition: background-color 0.3s; }
         .btn-audit:hover { background: #d41e23; }
-
-        .back-link { color: #8b949e; text-decoration: none; display: block; margin-bottom: 20px; }
 
         /* SONUÇ KUTULARI STİLİ */
         .usage-info { text-align: center; margin-bottom: 25px; padding: 15px; background-color: #0d1117; border-radius: 8px; font-size: 1rem; border: 1px solid #30363d;}
@@ -47,6 +47,9 @@
         .result-box h3 { color: #10b981; font-size: 1.5rem; }
         .title-item { background: #21262d; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-weight: 600; color: #f1f1f1; border-left: 3px solid #e62429; }
         
+        .back-link { color: #8b949e; text-decoration: none; display: block; margin-bottom: 20px; }
+        .back-link:hover { color: white; }
+
         footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
         .footer-link { color: #8b949e; margin: 0 10px; font-size: 0.9rem; transition: color 0.3s; }
         .footer-link:hover { color: var(--accent); }
@@ -88,7 +91,7 @@
     <!-- NAV BAR BİTİŞİ -->
 
     <div class="container">
-        <div class="main-container">
+        <div class="main-content-area">
             <a href="/" class="back-link">&larr; Ana Sayfaya Dön</a>
 
             <h1 class="mb-2 text-center">AI BAŞLIK VE AÇIKLAMA ÜRETİCİ</h1>
