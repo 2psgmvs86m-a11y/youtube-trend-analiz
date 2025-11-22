@@ -212,11 +212,18 @@ def get_channel_data(query, lang_code='tr'):
             'daily_subs': daily_subs_formatted, 
             'channel_type': channel_type_label,
             'consistency': consistency_data,
-            'raw_sub_count': sub_count, 'raw_view_count': view_count, 'raw_video_count': video_count,
-            'raw_daily_subs': daily_subs_raw, 'raw_earnings_high': monthly_rev * 1.2, 'raw_grade_val': get_grade_value(grade),
-            'name': snippet['title'], 'avatar': snippet['thumbnails']['medium']['url'] 
+            # --- KIYASLAMA İÇİN HAM VERİLER (CRITICAL FIX) ---
+            'raw_sub_count': sub_count, 
+            'raw_view_count': view_count, 
+            'raw_video_count': video_count,
+            'raw_daily_subs': daily_subs_raw, 
+            'raw_earnings_high': monthly_rev * 1.2, 
+            'raw_grade_val': get_grade_value(grade),
+            'name': snippet['title'], 
+            'avatar': snippet['thumbnails']['medium']['url'] 
         }
     except Exception as e:
+        print(f"API Error: {e}")
         return None
 
 # --- VİDEO SEO ---
@@ -317,7 +324,13 @@ def channel_vs():
                 'daily_subs1': d1['daily_subs'], 'daily_subs2': d2['daily_subs'],
                 'earnings1': d1['earnings'], 'earnings2': d2['earnings'],
                 'country1': d1['country'], 'country2': d2['country'],
-                'raw_subs1': d1['raw_sub_count'], 'raw_subs2': d2['raw_sub_count'] 
+                # --- HAM VERİLER ŞABLONA GÖNDERİLİYOR ---
+                'raw_subs1': d1['raw_sub_count'], 'raw_subs2': d2['raw_sub_count'],
+                'raw_views1': d1['raw_view_count'], 'raw_views2': d2['raw_view_count'],
+                'raw_videos1': d1['raw_video_count'], 'raw_videos2': d2['raw_video_count'],
+                'raw_grade1': d1['raw_grade_val'], 'raw_grade2': d2['raw_grade_val'],
+                'raw_earnings1': d1['raw_earnings_high'], 'raw_earnings2': d2['raw_earnings_high'],
+                'avatar1': d1['avatar'], 'avatar2': d2['avatar']
             }
         else: error = "Kanal verisi alınamadı."
     return render_template('channel_vs.html', content=content, result=result, error=error, input_data=input_data, current_lang=lang)
