@@ -7,39 +7,42 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* ORTAK TEMA CSS */
         :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
         body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
-        p, span, div, li { color: #e2e8f0; }
-        .text-muted { color: #94a3b8 !important; opacity: 1 !important; }
+        p, span, div, li, label { color: #e2e8f0; }
+        .text-muted { color: #94a3b8 !important; opacity: 0.8 !important; }
+
         .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
         .nav-link { color: #e2e8f0 !important; font-weight: 500; transition: color 0.3s; }
         .nav-link:hover { color: var(--accent) !important; }
+        
         .hero { padding: 60px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); flex: 1;}
-        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: #ffffff !important; padding: 15px; border-radius: 8px 0 0 8px; }
+        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: white !important; padding: 15px; border-radius: 8px 0 0 8px; }
         .search-input::placeholder { color: #cbd5e1 !important; opacity: 0.7; }
         .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 0 20px; border-radius: 0 8px 8px 0; }
-        .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
+        
         .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 20px; height: 100%; }
         .channel-banner { height: 120px; width: 100%; object-fit: cover; border-radius: 12px 12px 0 0; opacity: 0.6; }
         .profile-header { margin-top: -50px; position: relative; z-index: 2; text-align: center; }
         .avatar-overlay { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--card-bg); background: #000; }
         .grade-box { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 2rem; font-weight: 800; color: white; }
+        
         .grade-A, .grade-A_plus { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
         .grade-B, .grade-B_plus { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .grade-C { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .grade-D { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        
         .tag-badge { background: #21262d; color: #58a6ff; font-size: 0.8rem; padding: 5px 10px; border-radius: 6px; margin: 0 4px 4px 0; display: inline-block; border: 1px solid #30363d; }
         .finance-active { background: linear-gradient(145deg, #064e3b 0%, #161b22 100%); border: 1px solid #10b981; }
         .finance-passive { background: linear-gradient(145deg, #450a0a 0%, #161b22 100%); border: 1px solid #ef4444; }
         .stat-num { font-size: 1.5rem; font-weight: 700; font-family: 'Rajdhani'; color: #ffffff; }
         .stat-label { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         a { color: inherit; text-decoration: none; }
-        .result-box { background: #0d1117; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-top: 30px; }
-        .title-item { background: #21262d; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-weight: 600; color: #f1f1f1; border-left: 3px solid #e62429; }
-        .result-heading { color: #10b981; }
-        
+
         footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
         .footer-link { color: #8b949e; margin: 0 10px; font-size: 0.9rem; transition: color 0.3s; }
         .footer-link:hover { color: var(--accent); }
@@ -50,22 +53,18 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand fw-bold text-white" href="/"><i class="fas fa-chart-pie text-danger"></i> YT<span class="text-white">AUDIT</span></a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="/">Ana Sayfa</a></li>
                     <li class="nav-item"><a class="nav-link" href="/hakkimizda">Hakkımızda</a></li>
                     <li class="nav-item"><a class="nav-link" href="/iletisim">İletişim</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Araçlar</a>
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Araçlar</a>
                         <ul class="dropdown-menu dropdown-menu-dark" style="background: #161b22;">
                             <li><a class="dropdown-item" href="/araclar/ai-baslik">AI Başlık Oluşturucu</a></li> 
                             <li><a class="dropdown-item" href="/araclar/kanal-karsilastir">Kanal Kıyaslama</a></li>
                             <li><a class="dropdown-item" href="/araclar/video-seo">Video SEO Skoru</a></li>
-                            <li><a class="dropdown-item" href="#">Thumbnail İndir (Yakında)</a></li>
-                            <li><a class="dropdown-item" href="#">Tag Bulucu (Yakında)</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -95,7 +94,13 @@
         {% if result %}
         <div class="container pb-5 mt-5">
             
+            <!-- PROFİL KARTI -->
             <div class="glass-card p-0 mb-3">
+                {% if result.banner %}
+                <img src="{{ result.banner }}" class="channel-banner">
+                {% else %}
+                <div class="channel-banner" style="background: #21262d;"></div>
+                {% endif %}
                 <div class="px-3 pb-3">
                     <div class="profile-header">
                         <img src="{{ result.avatar }}" class="avatar-overlay shadow">
@@ -112,6 +117,7 @@
                 </div>
             </div>
 
+            <!-- PARA KAZANMA -->
             <div class="glass-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start mb-3 {{ 'finance-active' if result.monetized else 'finance-passive' }}">
                 <div class="mb-3 mb-md-0">
                     <div class="stat-label mb-1 text-white-50">{{ content.monetization }}</div>
@@ -130,6 +136,7 @@
                 </div>
             </div>
 
+            <!-- İSTATİSTİKLER -->
             <div class="row g-3 mb-3">
                 <div class="col-4">
                     <div class="glass-card text-center p-2 d-flex flex-column justify-content-center">
@@ -151,6 +158,7 @@
                 </div>
             </div>
 
+            <!-- PREMIUM VERİLER -->
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
                     <div class="glass-card p-3 d-flex align-items-center justify-content-between">
@@ -186,6 +194,7 @@
                 </div>
             </div>
 
+            <!-- KANAL TİPİ & İSTİKRAR -->
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <div class="glass-card p-3 d-flex align-items-center justify-content-between">
@@ -207,6 +216,7 @@
                 </div>
             </div>
 
+            <!-- DETAYLAR -->
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <div class="glass-card p-3 d-flex align-items-center">
@@ -253,6 +263,7 @@
                 </div>
                 {% endfor %}
             </div>
+
         </div>
         {% endif %}
     </div>
@@ -272,3 +283,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
