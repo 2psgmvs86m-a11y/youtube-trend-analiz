@@ -1,1 +1,178 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanal Kıyaslama Aracı - YT Audit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
+        body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+        h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+        p, span, div, li { color: #e2e8f0; }
+        .text-muted { color: #94a3b8 !important; opacity: 0.8 !important; }
+        .navbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; }
+        .nav-link { color: #e2e8f0 !important; font-weight: 500; transition: color 0.3s; }
+        .nav-link:hover { color: var(--accent) !important; }
+        .hero { padding: 60px 0; background: radial-gradient(circle at top, #1f2937 0%, var(--dark-bg) 70%); flex: 1;}
+        .search-input { background: #0d1117 !important; border: 1px solid #30363d; color: #ffffff !important; padding: 10px; border-radius: 6px; }
+        .search-input::placeholder { color: #cbd5e1 !important; opacity: 0.7; }
+        .btn-audit { background: var(--accent); border: none; color: white; font-weight: 700; padding: 12px 20px; border-radius: 6px; transition: background-color 0.3s; }
+        .btn-audit:hover { background: #d41e23; }
+        .form-select { background-color: #0d1117; color: white; border: 1px solid #30363d; }
+        .glass-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 30px; height: 100%; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+
+        .error-box { background-color: #3b1e1e; color: #f85149; padding: 15px; border-radius: 6px; margin-top: 20px; border: 1px solid #f85149; }
+        .comparison-table { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; }
+        .table-header { background-color: #21262d; font-weight: 700; color: white; padding: 15px; border-bottom: 1px solid #30363d; }
+        .table-row { display: flex; border-bottom: 1px solid #161b22; }
+        .metric-cell { padding: 12px 15px; flex-basis: 33.333%; text-align: left; background-color: #161b22; }
+        .value-cell { padding: 12px 15px; flex-basis: 33.333%; text-align: center; font-weight: 600; }
+        .metric-cell i { color: var(--accent); margin-right: 8px; }
+
+        .vs-divider { display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: var(--accent); }
+        .channel-card { border: 1px solid #30363d; padding: 20px; border-radius: 8px; text-align: center; height: 100%; }
+        .channel-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid #e62429; }
+
+        .winner { background-color: #1f3b30 !important; color: #48c9b0 !important; font-weight: 700;}
+
+        footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
+        .footer-link { color: #8b949e; margin: 0 10px; font-size: 0.9rem; transition: color 0.3s; }
+        .footer-link:hover { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="/"><i class="fas fa-chart-pie text-danger"></i> YT<span class="text-white">AUDIT</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Ana Sayfa</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/hakkimizda">Hakkımızda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/iletisim">İletişim</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Araçlar</a>
+                        <ul class="dropdown-menu dropdown-menu-dark" style="background: #161b22;">
+                            <li><a class="dropdown-item" href="/araclar/ai-baslik">AI Başlık Oluşturucu</a></li> 
+                            <li><a class="dropdown-item" href="/araclar/kanal-karsilastir">Kanal Kıyaslama</a></li>
+                            <li><a class="dropdown-item" href="/araclar/video-seo">Video SEO Skoru</a></li>
+                            <li><a class="dropdown-item" href="#">Thumbnail İndir (Yakında)</a></li>
+                            <li><a class="dropdown-item" href="#">Tag Bulucu (Yakında)</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <select class="form-select form-select-sm shadow-none ms-3" style="width: auto;" onchange="location = '?lang=' + this.value;">
+                    <option value="tr" {% if current_lang == 'tr' %}selected{% endif %}>TR</option>
+                    <option value="en" {% if current_lang == 'en' %}selected{% endif %}>EN</option>
+                    <option value="de" {% if current_lang == 'de' %}selected{% endif %}>DE</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="container">
+            <h1 class="text-center display-6 fw-bold mb-4 text-white">YouTube Kanal Kıyaslama (VS) Aracı</h1>
+            <p class="text-center text-muted mb-5">İki farklı YouTube kanalını Abone, Görüntülenme ve Kalite Notu gibi temel metriklerle anında karşılaştırın.</p>
+
+            <form method="POST" class="row g-3 justify-content-center mb-5">
+                <div class="col-md-5">
+                    <input type="text" name="query1" class="form-control search-input" placeholder="1. Kanal Linki" required value="{{ request.form.get('query1', '') }}">
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="query2" class="form-control search-input" placeholder="2. Kanal Linki" required value="{{ request.form.get('query2', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-audit w-100"><i class="fas fa-balance-scale"></i> KIYASLA</button>
+                </div>
+            </form>
+
+            {% if error %}
+                <div class="alert alert-danger error-box mx-auto" style="max-width: 900px;" role="alert">
+                    <strong>Hata:</strong> {{ error }}
+                </div>
+            {% endif %}
+
+            {% if results and results.channel1 and results.channel2 %}
+                {% set res1 = results.channel1 %}
+                {% set res2 = results.channel2 %}
+
+                <div class="row g-4 justify-content-center mt-4">
+                    <div class="col-md-4">
+                        <div class="channel-card glass-card">
+                            <img src="{{ res1.avatar }}" alt="{{ res1.title }}" class="mb-3">
+                            <h2 class="h4 text-white">{{ res1.title }}</h2>
+                            <p class="text-muted">{{ res1.niche }}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-1 d-flex align-items-center justify-content-center">
+                        <div class="vs-divider">VS</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="channel-card glass-card">
+                            <img src="{{ res2.avatar }}" alt="{{ res2.title }}" class="mb-3">
+                            <h2 class="h4 text-white">{{ res2.title }}</h2>
+                            <p class="text-muted">{{ res2.niche }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-table mt-5 mx-auto" style="max-width: 900px;">
+                    <div class="table-header row g-0">
+                        <div class="col-4 text-start">ÖLÇÜT</div>
+                        <div class="col-4 text-center">KANAL 1</div>
+                        <div class="col-4 text-center">KANAL 2</div>
+                    </div>
+
+                    {% set metrics = [
+                        ('Abone Sayısı', 'subs', 'fas fa-users', res1.sub_count, res2.sub_count, res1.sub_count > res2.sub_count),
+                        ('Görüntülenme', 'views', 'fas fa-eye', res1.view_count, res2.view_count, res1.view_count > res2.view_count),
+                        ('Toplam Video', 'videos', 'fas fa-video', res1.video_count, res2.video_count, res1.video_count > res2.video_count),
+                        (content['grade'], 'grade', 'fas fa-award', res1.grade, res2.grade, res1.grade < res2.grade if res1.grade and res2.grade and res1.grade[0] == res2.grade[0] else res1.grade > res2.grade),
+                        (content['daily_sub'], 'daily_sub', 'fas fa-chart-line', res1.daily_subs | int, res2.daily_subs | int, res1.daily_subs | int > res2.daily_subs | int),
+                        (content['earnings'], 'earnings', 'fas fa-dollar-sign', res1.earnings, res2.earnings, res1.earnings > res2.earnings)
+                    ] %}
+
+                    {% for label, key, icon, val1, val2, is_val1_winner in metrics %}
+                        <div class="table-row row g-0">
+                            <div class="metric-cell col-4"><i class="{{ icon }}"></i> {{ label }}</div>
+                            <div class="value-cell col-4 {% if key in ['grade', 'daily_sub', 'earnings'] and is_val1_winner %}winner{% endif %}" data-value="{{ val1 }}">{{ val1 }}</div>
+                            <div class="value-cell col-4 {% if key in ['grade', 'daily_sub', 'earnings'] and not is_val1_winner %}winner{% endif %}" data-value="{{ val2 }}">{{ val2 }}</div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="table-row row g-0">
+                        <div class="metric-cell col-4"><i class="fas fa-map-marker-alt"></i> {{ content['country'] }}</div>
+                        <div class="value-cell col-4">{{ res1.country }}</div>
+                        <div class="value-cell col-4">{{ res2.country }}</div>
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <footer>
+        <div class="container text-center">
+            <div class="footer-links mb-3">
+                <a href="/gizlilik" class="footer-link">Gizlilik Politikası</a>
+                <a href="/kullanim" class="footer-link">Kullanım Şartları</a>
+                <a href="/hakkimizda" class="footer-link">Hakkımızda</a>
+                <a href="/iletisim" class="footer-link">İletişim</a>
+            </div>
+            <p class="text-muted small mb-0">&copy; 2025 YT Audit. Veriler YouTube API tarafından sağlanmaktadır.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 
