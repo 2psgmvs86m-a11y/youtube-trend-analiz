@@ -3,97 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Başlık Oluşturucu - YT Audit</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>AI Başlık ve Açıklama Üretici</title>
     <style>
-        :root { --dark-bg: #0b0e11; --card-bg: #161b22; --accent: #e62429; --text-main: #ffffff; }
-        body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
-        h1, h2, h3 { color: #ffffff !important; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
-        
-        /* DÜZELTME: GENEL OKUNABİLİRLİK */
-        .text-muted { color: #cbd5e1 !important; opacity: 1 !important; }
-        .form-label { color: #ffffff !important; } /* Label'lar beyaz olsun */
-
-        .main-container { max-width: 800px; margin: 50px auto; padding: 30px; background: #161b22; border: 1px solid #30363d; border-radius: 12px; flex: 1;}
-        
-        /* FORM ALANLARI */
-        .form-control, .form-select { 
-            background-color: #0d1117; 
-            color: white; 
-            border: 1px solid #30363d; 
+        body { font-family: 'Arial', sans-serif; background-color: #0d1117; color: #c9d1d9; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background-color: #161b22; padding: 20px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); }
+        h1 { color: #58a6ff; border-bottom: 2px solid #21262d; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
+        form label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        form input[type="text"], form select, form textarea {
+            width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #30363d; border-radius: 6px; background-color: #0d1117; color: #c9d1d9; box-sizing: border-box;
         }
-        .form-control:focus, .form-select:focus { box-shadow: none; border-color: var(--accent); }
-        
-        .btn-generate { background: var(--accent); border: none; color: white; font-weight: 700; padding: 10px 20px; }
-        .result-box { background: #0d1117; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-top: 30px; }
-        .title-item { background: #21262d; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-weight: 600; color: #f1f1f1; } /* BAŞLIK RENGİ */
-        .back-link { color: #8b949e; text-decoration: none; display: block; margin-bottom: 20px; }
-        .error-message { color: #e62429; padding: 15px; border: 1px solid #e62429; border-radius: 8px; margin-top: 20px; }
-        .result-heading { color: #10b981; }
-        
-        footer { background-color: #0d1117; border-top: 1px solid #30363d; padding: 40px 0; margin-top: auto; }
-        .footer-link { color: #8b949e; margin: 0 10px; font-size: 0.9rem; transition: color 0.3s; }
-        .footer-link:hover { color: var(--accent); }
+        form button { background-color: #f85149; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.3s; }
+        form button:hover { background-color: #e5463f; }
+        .result-box { background-color: #21262d; padding: 15px; border-radius: 6px; margin-top: 20px; border-left: 5px solid #58a6ff; }
+        .result-box h3 { color: #58a6ff; margin-top: 0; }
+        .result-box pre { white-space: pre-wrap; word-wrap: break-word; background-color: #0d1117; padding: 10px; border-radius: 4px; border: 1px solid #30363d; }
+        .error-box { background-color: #3b1e1e; color: #f85149; padding: 15px; border-radius: 6px; margin-top: 20px; border: 1px solid #f85149; }
+        .usage-info { text-align: center; margin-bottom: 15px; padding: 10px; background-color: #21262d; border-radius: 6px; font-size: 14px; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>AI Başlık & Açıklama Üretici (Groq Llama 3.1)</h1>
 
-<div class="container">
-    <div class="main-container">
-        <a href="/" class="back-link">&larr; Ana Sayfaya Dön</a>
+        <div class="usage-info">
+            Kalan Hakkınız: <strong>{{ uses_left }} / {{ max_uses }}</strong> (Limit tarayıcı çerezleri ile takip edilir.)
+        </div>
 
-        <h1 class="mb-4 text-center">Lokal AI Başlık Oluşturucu</h1>
-        <p class="text-muted text-center mb-4">Kendi sunucunuzda çalışan Yapay Zeka, en popüler kalıpları kullanarak başlıklar üretecektir.</p>
-        
-        <form method="POST">
-            <div class="mb-3">
-                <label for="topic" class="form-label">Video Konusu (Örn: YouTube SEO ipuçları)</label>
-                <input type="text" class="form-control" id="topic" name="topic" required value="{{ input_data.topic or '' }}">
+        {% if error %}
+            <div class="error-box">
+                <strong>Hata:</strong> {{ error }}
             </div>
-            <div class="mb-3">
-                <label for="style" class="form-label">Başlık Stili</label>
-                <select class="form-select" id="style" name="style">
-                    <option value="Viral ve Merak Uyandıran" {% if input_data.style == 'Viral ve Merak Uyandıran' %}selected{% endif %}>Viral ve Merak Uyandıran</option>
-                    <option value="Eğitici ve Bilgilendirici" {% if input_data.style == 'Eğitici ve Bilgilendirici' %}selected{% endif %}>Eğitici ve Bilgilendirici</option>
-                    <option value="Listeleme ve Hızlı Tüketim" {% if input_data.style == 'Listeleme ve Hızlı Tüketim' %}selected{% endif %}>Listeleme ve Hızlı Tüketim</option>
+        {% endif %}
+
+        {% if uses_left <= 0 and not ai_result %}
+             <div class="error-box" style="background-color: #0d1117; color: #58a6ff; border: 1px solid #58a6ff;">
+                <strong>Limit Doldu:</strong> Günlük kullanım limitinizi doldurdunuz.
+            </div>
+        {% else %}
+            <form method="POST">
+                <label for="topic">Video Konusu (Örn: YouTube SEO ipuçları, Kripto para analizi)</label>
+                <input type="text" id="topic" name="topic" value="{{ input_data.topic or '' }}" required>
+
+                <label for="style">Başlık Stili</label>
+                <select id="style" name="style" required>
+                    <option value="Sıradan ve Bilgilendirici" {% if input_data.style == 'Sıradan ve Bilgilendirici' %}selected{% endif %}>Sıradan ve Bilgilendirici</option>
                     <option value="Şok Edici ve Duygusal" {% if input_data.style == 'Şok Edici ve Duygusal' %}selected{% endif %}>Şok Edici ve Duygusal</option>
+                    <option value="Soru Soran ve Merak Uyandıran" {% if input_data.style == 'Soru Soran ve Merak Uyandıran' %}selected{% endif %}>Soru Soran ve Merak Uyandıran</option>
+                    <option value="Eğitici ve Rehber" {% if input_data.style == 'Eğitici ve Rehber' %}selected{% endif %}>Eğitici ve Rehber</option>
+                    <option value="Liste (Top List) Formatında" {% if input_data.style == 'Liste (Top List) Formatında' %}selected{% endif %}>Liste (Top List) Formatında</option>
                 </select>
-            </div>
-            
-            <button type="submit" class="btn btn-generate w-100">BAŞLIK OLUŞTUR</button>
+                
+                <label for="captcha">CAPTCHA Doğrulaması: Lütfen sonucu girin ({{ captcha_question }})</label>
+                <input type="text" id="captcha" name="captcha_check" required>
 
-            <p class="text-muted small text-center mt-3">Bu araç, harici bir API kullanmadan kendi sunucunuzda çalışır.</p>
-        </form>
-        
-        {% if ai_result %}
+                <button type="submit">BAŞLIK OLUŞTUR</button>
+            </form>
+        {% endif %}
+
+
+        {% if ai_result and 'error' not in ai_result %}
             <div class="result-box">
-                {% if ai_result.error %}
-                    <div class="error-message"><i class="fas fa-exclamation-triangle me-2"></i> **Hata:** {{ ai_result.error }}</div>
-                    <p class="text-muted small mt-2">Lokal Yapay Zeka motorunda bir sorun oluştu.</p>
-                {% else %}
-                    <h3 class="result-heading">Başlık Önerileri</h3>
+                <h3>Üretilen Başlıklar (SEO Uyumlu)</h3>
+                <ul>
                     {% for title in ai_result.titles %}
-                        <div class="title-item">{{ title }}</div>
+                        <li>{{ title | safe }}</li>
                     {% endfor %}
+                </ul>
 
-                    <h3 class="result-heading mt-4">Profesyonel Açıklama</h3>
-                    <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem; color: #e2e8f0;">{{ ai_result.description }}</pre>
+                <h3>Kısa Açıklama (Yaklaşık 50 Kelime)</h3>
+                <pre>{{ ai_result.description }}</pre>
+            </div>
+        {% endif %}
 
-                    <h3 class="result-heading mt-4 small">Motor Bilgisi</h3>
-                    <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.8rem; color: #8b949e;">{{ ai_result.raw }}</pre>
-                {% endif %}
+        {% if ai_result and 'error' in ai_result %}
+             <div class="error-box">
+                <strong>Hata:</strong> {{ ai_result.error }}
             </div>
         {% endif %}
     </div>
-</div>
-<footer>
-    <div class="container text-center">
-        <p class="text-muted small mb-0">&copy; 2025 YT Audit.</p>
-    </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
