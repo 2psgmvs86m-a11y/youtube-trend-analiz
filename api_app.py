@@ -17,18 +17,37 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 translations = {
     'tr': {
         'title': 'YouTube Kanal Denetçisi',
+        'search_btn': 'KANALI DENETLE',
+        'placeholder': 'Lütfen Kanal Linki Giriniz (youtube.com/@isim)...',
+        'grade': 'Kanal Notu',
+        'upload_schedule': 'Yükleme Saati',
+        'tags': 'Kanal Etiketleri',
+        'category': 'Kategori',
+        'monetization': 'Para Kazanma',
+        'earnings': 'Tahmini Aylık Gelir',
         'active': 'AÇIK / AKTİF ✅',
         'passive': 'KAPALI / RİSKLİ ❌',
+        'subs': 'Abone',
+        'views': 'Görüntülenme',
+        'videos': 'Video',
+        'engagement': 'Etkileşim Oranı',
         'error': 'Lütfen geçerli bir YouTube Linki girin!',
-        'warn_monetization': 'Kanalın para kazanma durumu doğrulanamadı.',
+        'latest': 'Son Yüklemeler',
+        'warn_monetization': 'Kanalın para kazanma durumu doğrulanamadı veya kapalı.',
+        'country': 'Kanal Ülkesi',
+        'age': 'Kanal Yaşı',
+        'growth': 'Günlük Büyüme',
+        'daily_sub': 'Abone/Gün',
+        'channel_type': 'Kanal Tipi',
+        'consistency': 'İstikrar Durumu',
         'seo_score': 'SEO Skoru',
-        'video_views': 'Görüntülenme',
-        'video_likes': 'Beğenme',
-        'video_comments': 'Yorum',
         'video_title_len': 'Başlık Uzunluğu',
         'video_tag_count': 'Etiket Sayısı',
         'video_desc_len': 'Açıklama Uzunluğu',
-        'keyword_match': 'Başlık/Etiket Uyumu'
+        'keyword_match': 'Başlık/Etiket Uyumu',
+        'video_views': 'Görüntülenme',
+        'video_likes': 'Beğenme',
+        'video_comments': 'Yorum'
     },
     'en': { 'title': 'YouTube Audit', 'error': 'Invalid Link', 'active': 'ACTIVE', 'passive': 'INACTIVE' },
     'de': { 'title': 'YouTube Audit', 'error': 'Ungültiger Link', 'active': 'AKTIV', 'passive': 'INAKTIV' }
@@ -93,7 +112,7 @@ def calculate_age_stats(published_at):
         return f"{years} Yıl, {months} Ay", days_active
     except: return "Bilinmiyor", 1
 
-# --- ANA KANAL VERİSİ ÇEKME ---
+# --- ANA KANAL VERİSİ ---
 def get_channel_data(query, lang_code='tr'):
     if not YOUTUBE_API_KEY: return None 
     query_type, query_value = extract_strict_link(query)
@@ -174,7 +193,7 @@ def get_channel_data(query, lang_code='tr'):
         consistency_data = {'label': consistency_label}
         
         base_cpm, niche_name = get_niche_cpm(keywords, snippet['title'], snippet['description'])
-        final_cpm = base_cpm * 1.0 # Basitleştirilmiş çarpan
+        final_cpm = base_cpm * 1.0 
         est_monthly_views = view_count * 0.03 
         monthly_rev = (est_monthly_views / 1000) * final_cpm
         
@@ -193,15 +212,14 @@ def get_channel_data(query, lang_code='tr'):
             'daily_subs': daily_subs_formatted, 
             'channel_type': channel_type_label,
             'consistency': consistency_data,
-            # Raw data for comparison
             'raw_sub_count': sub_count, 'raw_view_count': view_count, 'raw_video_count': video_count,
-            'raw_daily_subs': daily_subs_raw, 'raw_grade_val': get_grade_value(grade)
+            'raw_daily_subs': daily_subs_raw, 'raw_earnings_high': monthly_rev * 1.2, 'raw_grade_val': get_grade_value(grade),
+            'name': snippet['title'], 'avatar': snippet['thumbnails']['medium']['url'] 
         }
     except Exception as e:
-        print(f"API Error: {e}")
         return None
 
-# --- VIDEO SEO DATA ---
+# --- VİDEO SEO ---
 def get_video_data(video_id, lang_code='tr'):
     if not YOUTUBE_API_KEY: return None
     try:
@@ -217,8 +235,6 @@ def get_video_data(video_id, lang_code='tr'):
         view_count = int(stats.get('viewCount', 0))
         like_count = int(stats.get('likeCount', 0))
         comment_count = int(stats.get('commentCount', 0))
-        
-        # SEO Logic
         score = 0
         title_len = len(title)
         if 40 <= title_len <= 70: score += 20 
@@ -234,15 +250,14 @@ def get_video_data(video_id, lang_code='tr'):
         for tag in tags:
             if tag.lower() in title.lower(): keywords_match += 1
         if keywords_match >= 1: score += 30
-        
         final_score = min(score + keywords_match*5, 100)
         engagement = (like_count + comment_count) / view_count * 100 if view_count > 0 else 0
-        
+        status_label = "Mükemmel" if final_score >= 80 else "İyi" if final_score >= 50 else "Geliştirilmeli"
         return {
             'title': title, 'channel_title': snippet.get('channelTitle', ''), 'thumbnail': snippet['thumbnails']['high']['url'],
             'tags': tags, 'view_count': format_number(view_count), 'like_count': format_number(like_count),
             'comment_count': format_number(comment_count), 'engagement': f"{engagement:.2f}%", 'seo_score': final_score,
-            'status': "İyi" if final_score > 50 else "Geliştirilmeli", 'recommendation': "Etiket ve başlık uyumuna dikkat edin.",
+            'status': status_label, 'recommendation': "Meta verilerinizi optimize edin.",
             'title_len': title_len, 'tag_count': tag_count, 'desc_len': desc_len, 'keyword_match': keywords_match
         }
     except: return None
@@ -254,7 +269,7 @@ def generate_ai_content(topic, style):
     headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {GROQ_API_KEY}'}
     payload = {
         "model": "llama-3.1-8b-instant",
-        "messages": [{"role": "user", "content": f"Konu: {topic}, Stil: {style}. Türkçe, YouTube için 3 viral başlık ve 50 kelimelik açıklama yaz."}],
+        "messages": [{"role": "user", "content": f"Konu: {topic}, Stil: {style}. Türkçe, 3 viral başlık ve 50 kelimelik açıklama yaz."}],
         "temperature": 0.7, "max_tokens": 500
     }
     try:
@@ -302,7 +317,7 @@ def channel_vs():
                 'daily_subs1': d1['daily_subs'], 'daily_subs2': d2['daily_subs'],
                 'earnings1': d1['earnings'], 'earnings2': d2['earnings'],
                 'country1': d1['country'], 'country2': d2['country'],
-                'raw_subs1': d1['raw_sub_count'], 'raw_subs2': d2['raw_sub_count'] # Renklendirme için
+                'raw_subs1': d1['raw_sub_count'], 'raw_subs2': d2['raw_sub_count'] 
             }
         else: error = "Kanal verisi alınamadı."
     return render_template('channel_vs.html', content=content, result=result, error=error, input_data=input_data, current_lang=lang)
