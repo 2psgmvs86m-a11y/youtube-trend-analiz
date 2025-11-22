@@ -35,7 +35,7 @@ translations = {
         'age': 'Kanal Yaşı',
         'growth': 'Günlük Büyüme',
         'daily_sub': 'Abone/Gün',
-        'channel_type': 'Kanal Tipi',        # YENİ
+        'channel_type': 'Kanal Tipi',
         'consistency': 'İstikrar Durumu',
         'one_hit_label': 'Trend Durumu'
     },
@@ -80,7 +80,7 @@ def get_niche_cpm(tags, title, desc):
     if "finance" in full_text or "para" in full_text: return 8.00, "Finans"
     return 2.00, "Genel"
 
-# --- YENİ: VİDEO SÜRESİNİ SANİYEYE ÇEVİRME ---
+# --- İŞTE EKSİK OLAN FONKSİYON BUYDU ---
 def parse_duration(duration_str):
     """PT1H2M10S formatını saniyeye çevirir."""
     match = re.match(r'PT(\d+H)?(\d+M)?(\d+S)?', duration_str)
@@ -91,7 +91,7 @@ def parse_duration(duration_str):
     seconds = int(match.group(3)[:-1]) if match.group(3) else 0
     
     return (hours * 3600) + (minutes * 60) + seconds
-# ---------------------------------------------
+# ---------------------------------------
 
 def check_real_monetization(channel_id):
     url = f"https://www.youtube.com/channel/{channel_id}?hl=en"
@@ -107,8 +107,10 @@ def check_real_monetization(channel_id):
         if '"key":"is_monetization_enabled","value":"true"' in text: return True
         if 'sponsorButtonRenderer' in text: return True
         if 'merchandiseShelfRenderer' in text: return True
+        
         return False
-    except: return False
+    except:
+        return False
 
 def extract_strict_link(query):
     id_match = re.search(r'(?:channel/|videos/|user/)?(UC[\w-]{21}[AQgw])', query)
@@ -155,30 +157,31 @@ def get_channel_data(query, lang_code='tr'):
         if keys: keywords = [k.replace('"', '') for k in keys.split(' ')[:10]]
 
     uploads_id = info['contentDetails']['relatedPlaylists']['uploads']
-    
-    # 3. VİDEOLAR VE İÇERİK ANALİZİ
     videos_url = f"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId={uploads_id}&maxResults=10&key={YOUTUBE_API_KEY}"
     videos_res = requests.get(videos_url).json()
+
+    playlist_total = videos_res.get('pageInfo', {}).get('totalResults', 0)
+    hidden_videos = max(0, playlist_total - video_count)
 
     videos = []
     upload_hours = []
     
-    # --- YENİ: SHORTS / UZUN VİDEO ANALİZİ ---
+    # --- KANAL TİPİ ANALİZİ İÇİN SAYAÇLAR ---
     shorts_count = 0
     long_videos_count = 0
-    
+
     for item in videos_res.get('items', []):
         pub_time = item['snippet']['publishedAt']
         dt = datetime.strptime(pub_time, "%Y-%m-%dT%H:%M:%SZ")
         upload_hours.append(dt.hour)
         
-        # Süre Analizi
+        # Süre Analizi (parse_duration BURADA KULLANILIYOR)
         duration_str = item['contentDetails'].get('duration', 'PT0S')
         seconds = parse_duration(duration_str)
         
         if seconds <= 60: shorts_count += 1
         else: long_videos_count += 1
-        
+
         if len(videos) < 3:
             videos.append({
                 'title': item['snippet']['title'],
@@ -187,7 +190,7 @@ def get_channel_data(query, lang_code='tr'):
                 'published': dt.strftime("%d.%m.%Y")
             })
 
-    # KANAL TİPİ BELİRLEME
+    # Kanal Tipi Belirleme
     total_analyzed = shorts_count + long_videos_count
     if total_analyzed > 0:
         shorts_ratio = (shorts_count / total_analyzed) * 100
@@ -196,12 +199,10 @@ def get_channel_data(query, lang_code='tr'):
         else: channel_type_label = "Karışık / Dengeli ⚖️"
     else:
         channel_type_label = "Belirsiz"
-    # -----------------------------------------
 
     consistency_label = "Stabil"
     if daily_subs > 500: consistency_label = "Yükselişte 🚀"
-    consistency_data = {'label': consistency_label}
-    
+    consistency_data = {'label': consistency_label, 'top_video_views': "Veri Yok"}
     peak_hour_str = "Belirsiz"
     if upload_hours:
         common_hour = Counter(upload_hours).most_common(1)[0][0]
@@ -220,8 +221,10 @@ def get_channel_data(query, lang_code='tr'):
         if scraping_result:
             is_monetized = True
         else:
-            if sub_count > 5000 and view_count > 500000: is_monetized = True
-            else: is_monetized = False
+            if sub_count > 5000 and view_count > 500000:
+                is_monetized = True
+            else:
+                is_monetized = False
     
     earnings_str = f"${monthly_rev * 0.8:,.0f} - ${monthly_rev * 1.2:,.0f}" if is_monetized else "$0"
     status_key = 'active' if is_monetized else 'passive'
@@ -248,7 +251,7 @@ def get_channel_data(query, lang_code='tr'):
         'country': country_code,
         'age': age_str,
         'daily_subs': daily_subs,
-        'channel_type': channel_type_label, # YENİ VERİ
+        'channel_type': channel_type_label,
         'consistency': consistency_data
     }
 
@@ -268,7 +271,7 @@ def index():
                 if not result: error = content['error']
             except Exception as e:
                 print(f"Hata: {e}")
-                error = "API Hatası"
+                error = "Sunucu hatası oluştu. Lütfen tekrar deneyin."
 
     return render_template('index.html', content=content, current_lang=lang, result=result, error=error)
 
