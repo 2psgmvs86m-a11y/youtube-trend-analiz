@@ -8,6 +8,8 @@ from datetime import datetime
 from collections import Counter
 
 app = Flask(__name__)
+# OTURUM (SESSION) İÇİN ÇOK GEREKLİ: LİMİT VE CAPTCHA BURADA SAKLANACAK.
+# BU DEĞERİN RENDER'DA ORTAM DEĞİŞKENİ OLARAK AYARLANDIĞINDAN EMİN OLUN!
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_change_me')
 
 # API Anahtarları
@@ -96,7 +98,7 @@ def check_real_monetization(channel_id):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             "Accept-Language": "en-US,en;q=0.9",
-            "Cookie": "CONSENT=YES+cb.20210328-17-p0.en+FX+419; SOCS=CAISNQgDEitib3FfaWRlbnRpdHlmcm9udGVuZHVpc2VydmVyXzIwMjMwMTI0LjA2X3AxGgJlbiACGgYIgJ-NowY"
+            "Cookie": "CONSENT=YES+cb.20210328-17-p0.en+FX+419; SOCS=CAISNQgDEitib3FfaWRlntitdtyf-front-server_20230124.06_p1GgJlbiACGgYIgJ-NowY"
         }
         response = requests.get(url, headers=headers, timeout=5)
         text = response.text
@@ -115,29 +117,31 @@ def extract_strict_link(query):
     if handle_match: return 'forHandle', '@' + handle_match.group(1)
     return None, None
 
-# --- YENİ: GROQ API İLE İÇERİK OLUŞTURMA (Llama 3.1) ---
+# --- GÜNCELLENMİŞ: GROQ API İLE İÇERİK OLUŞTURMA (Llama 3.1) ---
 def generate_ai_content(topic, style):
     if not GROQ_API_KEY:
         return {"error": "GROQ_API_KEY Render'da tanımlı değil."}
     
     API_URL = "https://api.groq.com/openai/v1/chat/completions"
     
-    system_prompt = "Sen, YouTube içerik üreticileri için optimize başlık ve açıklama üreten profesyonel bir SEO uzmanısın. Cevabını sadece istenen metinle sınırla."
-    user_prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak Türkçe, çok yaratıcı, 3 adet viral başlık ve 1 adet 150 kelimelik profesyonel açıklama metni oluştur. Başlıkları mutlaka ayrı bir satırda numaralandır."
+    # GÜNCELLENMİŞ SYSTEM PROMPT: SEO vurgusu
+    system_prompt = "Sen, YouTube içerik üreticileri için optimize, SEO uyumlu başlık ve açıklama üreten profesyonel bir uzmansın. Cevabını sadece istenen metinle sınırla."
+    # GÜNCELLENMİŞ USER PROMPT: Açıklama ~50 kelimeye indirildi ve SEO vurgulandı
+    user_prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak Türkçe, çok yaratıcı, 3 adet SEO uyumlu viral başlık ve 1 adet kısa (~50 kelimelik) profesyonel açıklama metni oluştur. Başlıkları mutlaka ayrı bir satırda numaralandır."
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {GROQ_API_KEY}' # Groq anahtarı kullanılıyor
+        'Authorization': f'Bearer {GROQ_API_KEY}'
     }
 
     payload = {
-        "model": "llama-3.1-8b-instant", # MODEL ADI BURADA GÜNCELLENDİ
+        "model": "llama-3.1-8b-instant",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
         "temperature": 0.8,
-        "max_tokens": 1024
+        "max_tokens": 700 # Token limitini düşürerek rate limit riskini azaltıyoruz
     }
     
     try:
@@ -161,8 +165,7 @@ def generate_ai_content(topic, style):
         return {"error": "Yapay Zeka Metin Üretemedi (Boş Cevap)"}
 
     except requests.exceptions.RequestException:
-        # Hata alınırsa (Kota/Faturalandırma)
-        return {"error": f"API Bağlantı Hatası: Kotanız veya Faturalandırma Sorunu. Groq panelinizi kontrol edin."}
+        return {"error": f"API Bağlantı Hatası: Groq Kotanız veya Faturalandırma Sorunu."}
     except Exception:
         return {"error": "Bir sorun oluştu. Lütfen girdilerinizi kontrol edin."}
 # ---------------------------------------------------------------------------------------------------
@@ -307,16 +310,51 @@ def index():
 def ai_generator():
     ai_result = None
     input_data = {}
+    error_message = None
     
+    # KULLANIM LİMİTİ AYARLARI
+    MAX_USES = 5
+    if 'ai_uses' not in session:
+        session['ai_uses'] = 0
+
     if request.method == 'POST':
         topic = request.form.get('topic')
         style = request.form.get('style')
         
-        if topic and style:
-            ai_result = generate_ai_content(topic, style)
-            input_data = {'topic': topic, 'style': style}
+        # CAPTCHA KONTROLÜ
+        captcha_check = request.form.get('captcha_check')
+        captcha_result = session.pop('captcha_result', None) # Tek kullanımlık olması için sonucu siliyoruz
+        
+        # HATA KONTROLLERİ
+        if not topic or not style:
+            error_message = "Lütfen tüm alanları doldurun."
+        elif captcha_result is None or str(captcha_result) != captcha_check:
+            error_message = "CAPTCHA doğrulamasını yanlış yaptınız veya süresi doldu. Tekrar deneyin."
+        elif session['ai_uses'] >= MAX_USES:
+            error_message = f"Kullanım limitinizi ({MAX_USES} hak) doldurdunuz. Lütfen tarayıcı çerezlerinizi silin veya daha sonra tekrar deneyin."
+        else:
+            # BAŞARILI KONTROL: AI İÇERİĞİ OLUŞTUR
+            if topic and style:
+                ai_result = generate_ai_content(topic, style)
+                input_data = {'topic': topic, 'style': style}
+                
+                # SADECE BAŞARILI AI İŞLEMİNDE SAYACI ARTIR
+                if 'error' not in ai_result:
+                    session['ai_uses'] += 1
+                else:
+                    error_message = ai_result['error'] # API hatasını kullanıcıya göster
 
-    return render_template('ai_tool.html', ai_result=ai_result, input_data=input_data)
+    # YENİ CAPTCHA OLUŞTURMA
+    num1 = random.randint(1, 10)
+    num2 = random.randint(1, 10)
+    captcha_question = f"{num1} + {num2} = ?"
+    session['captcha_result'] = num1 + num2 # Sonucu oturumda sakla
+    
+    # Kalan hakkı hesapla
+    uses_left = MAX_USES - session.get('ai_uses', 0)
+
+    return render_template('ai_tool.html', ai_result=ai_result, input_data=input_data, error=error_message, 
+                           captcha_question=captcha_question, uses_left=uses_left, max_uses=MAX_USES)
 
 @app.route('/gizlilik')
 def privacy(): return render_template('privacy.html', page_key='privacy')
