@@ -12,7 +12,7 @@ app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_change_me')
 
 # API Anahtarları
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY') # YENİ ANAHTAR BURADAN ÇEKİLECEK
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY') # Groq Anahtarı
 
 translations = {
     'tr': {
@@ -115,14 +115,13 @@ def extract_strict_link(query):
     if handle_match: return 'forHandle', '@' + handle_match.group(1)
     return None, None
 
-# --- YENİ: GROQ API İLE İÇERİK OLUŞTURMA (HIZLI MOD) ---
+# --- YENİ: GROQ API İLE İÇERİK OLUŞTURMA (Llama 3.1) ---
 def generate_ai_content(topic, style):
     if not GROQ_API_KEY:
         return {"error": "GROQ_API_KEY Render'da tanımlı değil."}
     
-    API_URL = "https://api.groq.com/openai/v1/chat/completions" # OpenAI uyumlu Groq Endpoint
+    API_URL = "https://api.groq.com/openai/v1/chat/completions"
     
-    # Sisteme Talimat
     system_prompt = "Sen, YouTube içerik üreticileri için optimize başlık ve açıklama üreten profesyonel bir SEO uzmanısın. Cevabını sadece istenen metinle sınırla."
     user_prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak Türkçe, çok yaratıcı, 3 adet viral başlık ve 1 adet 150 kelimelik profesyonel açıklama metni oluştur. Başlıkları mutlaka ayrı bir satırda numaralandır."
 
@@ -132,7 +131,7 @@ def generate_ai_content(topic, style):
     }
 
     payload = {
-        "model": "mixtral-8x7b-32768", # Hızlı ve güçlü model
+        "model": "llama-3.1-8b-instant", # MODEL ADI BURADA GÜNCELLENDİ
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -149,7 +148,6 @@ def generate_ai_content(topic, style):
         if data.get('choices'):
             generated_text = data['choices'][0]['message']['content']
             
-            # Başlık ve açıklamayı ayırma
             parts = generated_text.split('\n')
             titles = [p.strip() for p in parts if p.strip() and p.strip().startswith(('1.', '2.', '3.', '-', '*'))]
             description = "\n".join([p for p in parts if not p.strip().startswith(('1.', '2.', '3.', '-', '*'))]).strip()
