@@ -2,18 +2,17 @@ import os
 import requests
 import json
 import re
+import random
 from flask import Flask, render_template, request, session, redirect, url_for
 from datetime import datetime
 from collections import Counter
-
-# --- GOOGLE-AUTH KÜTÜPHANELERİ KALDIRILDI ---
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_change_me')
 
 # API Anahtarları
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY') # YENİ ANAHTAR BURADAN ÇEKİLECEK
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY') # YENİ ANAHTAR BURADAN ÇEKİLECEK
 
 translations = {
     'tr': {
@@ -116,26 +115,24 @@ def extract_strict_link(query):
     if handle_match: return 'forHandle', '@' + handle_match.group(1)
     return None, None
 
-# --- YENİ: OPENAI API İLE İÇERİK OLUŞTURMA (GPT-3.5 TURBO) ---
+# --- YENİ: GROQ API İLE İÇERİK OLUŞTURMA (HIZLI MOD) ---
 def generate_ai_content(topic, style):
-    if not OPENAI_API_KEY:
-        return {"error": "OPENAI_API_KEY Render'da tanımlı değil."}
+    if not GROQ_API_KEY:
+        return {"error": "GROQ_API_KEY Render'da tanımlı değil."}
     
-    API_URL = "https://api.openai.com/v1/chat/completions"
+    API_URL = "https://api.groq.com/openai/v1/chat/completions" # OpenAI uyumlu Groq Endpoint
     
-    # Sisteme Talimat (Persona)
+    # Sisteme Talimat
     system_prompt = "Sen, YouTube içerik üreticileri için optimize başlık ve açıklama üreten profesyonel bir SEO uzmanısın. Cevabını sadece istenen metinle sınırla."
-    
-    # Kullanıcıdan Gelen Talimat
     user_prompt = f"Konu: {topic}. Stil: {style}. Bu bilgilere dayanarak Türkçe, çok yaratıcı, 3 adet viral başlık ve 1 adet 150 kelimelik profesyonel açıklama metni oluştur. Başlıkları mutlaka ayrı bir satırda numaralandır."
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {OPENAI_API_KEY}' # Anahtar, Bearer olarak gönderiliyor
+        'Authorization': f'Bearer {GROQ_API_KEY}' # Groq anahtarı kullanılıyor
     }
 
     payload = {
-        "model": "gpt-3.5-turbo",
+        "model": "mixtral-8x7b-32768", # Hızlı ve güçlü model
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -165,9 +162,9 @@ def generate_ai_content(topic, style):
 
         return {"error": "Yapay Zeka Metin Üretemedi (Boş Cevap)"}
 
-    except requests.exceptions.RequestException as e:
-        # 401: Yanlış anahtar, 429: Kota, 403: Erişim yok
-        return {"error": f"API Bağlantı Hatası: Kota veya Faturalandırma sorunu. OpenAI panelinizi kontrol edin."}
+    except requests.exceptions.RequestException:
+        # Hata alınırsa (Kota/Faturalandırma)
+        return {"error": f"API Bağlantı Hatası: Kotanız veya Faturalandırma Sorunu. Groq panelinizi kontrol edin."}
     except Exception:
         return {"error": "Bir sorun oluştu. Lütfen girdilerinizi kontrol edin."}
 # ---------------------------------------------------------------------------------------------------
